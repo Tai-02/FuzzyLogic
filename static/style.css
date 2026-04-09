@@ -1,0 +1,200 @@
+/* ============================================================
+   Expert PC Troubleshooter – Shared Stylesheet
+   Dùng cho: index.html, result.html, admin.html
+   ============================================================ */
+
+/* ── Base ─────────────────────────────────────────────────── */
+body {
+    background: #f0f2f5;
+}
+
+/* ── Header card (dùng chung mọi trang) ───────────────────── */
+.header-card {
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    color: white;
+    border-radius: 12px;
+    padding: 24px 30px;
+    margin-bottom: 24px;
+}
+
+/* ── Nút chẩn đoán (index.html) ───────────────────────────── */
+.btn-diagnose {
+    background: linear-gradient(135deg, #0f3460, #e94560);
+    border: none;
+    color: white;
+    font-size: 1.1rem;
+    padding: 12px;
+    border-radius: 8px;
+    width: 100%;
+}
+.btn-diagnose:hover {
+    opacity: 0.9;
+    color: white;
+}
+
+/* ── Category cards (index.html) ──────────────────────────── */
+.category-card {
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    overflow: hidden;
+}
+
+.category-header {
+    background: #0f3460;
+    color: white;
+    padding: 10px 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+.category-header:hover {
+    background: #1a4a7a;
+}
+
+.category-body {
+    padding: 14px 16px;
+    background: white;
+}
+
+.form-check-label {
+    cursor: pointer;
+}
+.form-check-input:checked + .form-check-label {
+    color: #0f3460;
+    font-weight: 500;
+}
+
+/* ── Beep section (index.html) ─────────────────────────────── */
+.beep-section {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 24px;
+}
+
+.beep-mode-tabs .nav-link {
+    color: #0f3460;
+    border-radius: 6px;
+    font-size: 0.9rem;
+}
+.beep-mode-tabs .nav-link.active {
+    background: #0f3460;
+    color: white;
+}
+
+/* Beep preview nhỏ – chỉ hiện khi có class .show */
+#beep-preview {
+    display: none;
+    border-left: 4px solid #0f3460;
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-top: 14px;
+    font-size: 0.88rem;
+}
+#beep-preview.show {
+    display: block;
+}
+
+/* ── Severity badges (index preview + result.html) ─────────── */
+.severity-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+.sev-normal   { background: #d1e7dd; color: #0a3622; }
+.sev-warning  { background: #fff3cd; color: #664d03; }
+.sev-error    { background: #f8d7da; color: #58151c; }
+.sev-critical { background: #842029; color: #fff;    }
+
+/* ── Severity card headers (result.html) ───────────────────── */
+.severity-normal   { background: #d1e7dd; color: #0a3622; }
+.severity-warning  { background: #fff3cd; color: #664d03; }
+.severity-error    { background: #f8d7da; color: #58151c; }
+.severity-critical { background: #842029; color: white;   }
+
+/* ── Result cards (result.html) ────────────────────────────── */
+.result-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin-bottom: 16px;
+}
+.result-card .card-header {
+    border-radius: 10px 10px 0 0;
+    font-weight: 600;
+}
+
+.badge-condition {
+    background: #e9ecef;
+    color: #495057;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 0.82rem;
+    margin: 2px;
+    display: inline-block;
+}
+
+.no-results {
+    background: white;
+    border-radius: 10px;
+    padding: 40px;
+    text-align: center;
+    color: #6c757d;
+}
+
+.solution-block {
+    background: #f8f9fa;
+    border-left: 4px solid #198754;
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-size: 0.9rem;
+    white-space: pre-line;
+}
+
+.bios-ref-badge {
+    font-size: 0.75rem;
+    background: #e7f3ff;
+    color: #0366d6;
+    border: 1px solid #b8d9ff;
+    border-radius: 4px;
+    padding: 2px 8px;
+    display: inline-block;
+    margin-top: 8px;
+}
+
+/* ── Admin page (admin.html) ────────────────────────────────── */
+.add-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin-bottom: 24px;
+}
+
+.table thead th {
+    background: #0f3460;
+    color: white;
+}
+
+.table-container {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.help-text {
+    background: #e7f3ff;
+    border-left: 4px solid #0d6efd;
+    padding: 10px 14px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+}
