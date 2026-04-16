@@ -1,14 +1,16 @@
 from flask import Flask, render_template, request, redirect, url_for
 import mysql.connector
+import os
+
 from fuzzy import fuzzy_beep
 
 app = Flask(__name__)
 
 db_config = {
-    "host": "localhost",
-    "user": "root",
-    "password": "0866582512",
-    "database": "expert_system"
+    "host": os.getenv("DB_HOST", "localhost"),
+    "user": os.getenv("DB_USER", "root"),
+    "password": os.getenv("DB_PASSWORD", "0866582512"),
+    "database": os.getenv("DB_NAME", "expert_system")
 }
 
 
