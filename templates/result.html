@@ -3,97 +3,267 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kết quả chẩn đoán - Expert PC Troubleshooter</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <title>Expert PC Troubleshooter // DIAGNOSTIC RESULT</title>
+    <!-- Google Font: Monospace sci-fi feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
-    <div class="container py-4" style="max-width: 860px;">
+<body class="cyber-body">
 
-        <div class="header-card">
-            <h4 class="mb-1">💡 Kết quả chẩn đoán</h4>
-            <p class="mb-0 opacity-75 small">
-                Triệu chứng đã chọn:
-                {% for s in selected_symptoms %}
-                <span class="badge bg-light text-dark me-1">{{ s }}</span>
-                {% endfor %}
-            </p>
+    <!-- ── SCANLINE OVERLAY ── -->
+    <div class="scanline-overlay" aria-hidden="true"></div>
+
+    <!-- ── TOP HEADER ── -->
+    <header class="cyber-header" role="banner">
+        <div class="cyber-header-inner">
+            <div class="cyber-logo">
+                <span class="logo-bracket">[</span>
+                <span class="logo-text">EXPERT-SYS</span>
+                <span class="logo-bracket">]</span>
+                <span class="logo-sub">// DIAGNOSTIC_OUTPUT_v2.0</span>
+            </div>
+            <div class="cyber-status-bar">
+                <span class="status-dot blink-green"></span>
+                <span class="status-text">ANALYSIS_COMPLETE</span>
+                <span class="status-sep">|</span>
+                <a href="/" class="cyber-admin-link">◂ NEW_SCAN</a>
+            </div>
         </div>
+    </header>
 
-        <!-- ========== RULE-BASED ========== -->
-        <h5 class="fw-bold mb-3">📌 Kết quả từ Rule-Based (Forward Chaining)</h5>
+    <main class="cyber-main">
+        <div class="cyber-grid">
 
-        {% if results %}
-            {% for r in results %}
-            <div class="card result-card">
-                <div class="card-header bg-primary text-white">
-                    🔎 Kết luận: {{ r.conclusion }}
+            <!-- ─────────────────────────────────────────────────
+                 LEFT COLUMN: DIAGNOSTIC RESULTS
+            ──────────────────────────────────────────────────── -->
+            <section class="panel-left" aria-label="Diagnostic Results">
+
+                <div class="panel-section-label">
+                    <span class="label-line"></span>
+                    <span class="label-text">// DIAGNOSTIC_DATA_PACK //</span>
+                    <span class="label-line"></span>
                 </div>
-                <div class="card-body">
-                    <p class="mb-2">
-                        <strong>Điều kiện khớp:</strong><br>
-                        {% for cond in r.matched_conditions %}
-                        <span class="badge-condition">{{ cond }}</span>
+
+                <div class="result-summary-box mb-4">
+                    <span class="summary-label">SYMPTOMS_LOGGED:</span>
+                    <div class="symptom-badges">
+                        {% for s in selected_symptoms %}
+                        <span class="cyber-badge-sm">{{ s }}</span>
                         {% endfor %}
-                    </p>
-                    <div class="solution-block">
-                        <strong>✅ Giải pháp:</strong><br>{{ r.solution }}
                     </div>
                 </div>
-            </div>
-            {% endfor %}
-        {% else %}
-        <div class="no-results">
-            <div style="font-size: 2.5rem;">🤔</div>
-            <p class="mt-2 mb-0">Không tìm thấy luật nào khớp với các triệu chứng đã chọn.</p>
-            <p class="small text-muted">Thử chọn thêm triệu chứng hoặc kiểm tra lại cơ sở tri thức.</p>
-        </div>
-        {% endif %}
 
-        <!-- ========== FUZZY LOGIC ========== -->
-        <h5 class="fw-bold mt-4 mb-3">🔔 Kết quả từ Fuzzy Logic (POST Beep Code)</h5>
+                <!-- ========== RULE-BASED RESULTS ========== -->
+                <div class="panel-sub-label">▸ ENGINE_01: FORWARD_CHAINING</div>
 
-        {% if beep and beep.linguistic_label %}
-            {% set sev = beep.severity %}
-            <div class="card result-card">
-                <div class="card-header severity-{{ sev }}">
-                    🎵 Loại beep: <em>"{{ beep.linguistic_label }}"</em>
-                    &nbsp;
-                    {% if sev == 'normal' %}
-                        <span class="badge bg-success">Bình thường</span>
-                    {% elif sev == 'warning' %}
-                        <span class="badge bg-warning text-dark">Cảnh báo</span>
-                    {% elif sev == 'error' %}
-                        <span class="badge bg-danger">Lỗi</span>
-                    {% elif sev == 'critical' %}
-                        <span class="badge bg-dark">⚠️ Nghiêm trọng</span>
-                    {% endif %}
-                </div>
-                <div class="card-body">
-                    <p class="mb-2">
-                        <strong>🩺 Chẩn đoán:</strong>
-                        <span class="fw-semibold">{{ beep.diagnosis }}</span>
-                    </p>
-                    <div class="solution-block mb-2">
-                        <strong>✅ Giải pháp từng bước:</strong><br>{{ beep.solution }}
+                {% if results %}
+                    {% for r in results %}
+                    <div class="cyber-result-card fault-detected" data-conclusion="{{ r.conclusion }}">
+                        <div class="result-card-header">
+                            <span class="r-icon">⚠</span>
+                            <span class="r-conclusion">KẾT LUẬN: {{ r.conclusion }}</span>
+                        </div>
+                        <div class="result-card-body">
+                            <div class="r-detail">
+                                <span class="d-label">MATCHED_FACTS:</span>
+                                <div class="d-content">
+                                    {% for cond in r.matched_conditions %}
+                                    <span class="fact-tag">{{ cond }}</span>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <div class="r-solution-box">
+                                <div class="s-header">✅ PROPOSED_SOLUTION:</div>
+                                <div class="s-content">{{ r.solution }}</div>
+                            </div>
+                        </div>
                     </div>
-                    {% if beep.bios_ref %}
-                    <div class="bios-ref-badge">📖 BIOS Reference: {{ beep.bios_ref }}</div>
-                    {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <div class="cyber-no-results">
+                        <div class="no-res-icon">?</div>
+                        <div class="no-res-msg">NO MATCHING RULES FOUND IN DATABASE.</div>
+                    </div>
+                {% endif %}
+
+                <!-- ========== FUZZY LOGIC RESULTS ========== -->
+                <div class="panel-sub-label mt-4">▸ ENGINE_02: FUZZY_BEEP_ANALYSER</div>
+
+                {% if beep and beep.linguistic_label %}
+                    {% set sev = beep.severity %}
+                    <div class="cyber-result-card beep-result sev-{{ sev }}" data-diagnosis="{{ beep.diagnosis }}">
+                        <div class="result-card-header">
+                            <span class="r-icon">🔔</span>
+                            <span class="r-conclusion">Loại Beep: "{{ beep.linguistic_label }}"</span>
+                            <span class="cyber-badge-sev ms-auto {{ sev }}">{{ sev|upper }}</span>
+                        </div>
+                        <div class="result-card-body">
+                            <div class="r-detail">
+                                <span class="d-label">DIAGNOSIS_HINT:</span>
+                                <span class="d-content highlight">{{ beep.diagnosis }}</span>
+                            </div>
+                            <div class="r-solution-box">
+                                <div class="s-header">✅ ACTION_PLAN:</div>
+                                <div class="s-content">{{ beep.solution }}</div>
+                            </div>
+                            {% if beep.bios_ref %}
+                            <div class="bios-ref-tag">REF: {{ beep.bios_ref }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="cyber-no-results">
+                        <div class="no-res-msg">NO BEEP SIGNAL RECORDED.</div>
+                    </div>
+                {% endif %}
+
+                <div class="text-center mt-4 pt-2">
+                    <a href="/" class="cyber-btn-outline">🔄 RETRY_DIAGNOSTIC</a>
                 </div>
-            </div>
-        {% else %}
-        <div class="alert alert-secondary">
-            Không có tiếng beep được chọn hoặc không xác định được loại beep.
-        </div>
-        {% endif %}
 
-        <div class="text-center mt-4">
-            <a href="/" class="btn btn-primary me-2">🔄 Chẩn đoán lại</a>
-            <a href="/admin" class="btn btn-outline-secondary">⚙️ Quản lý luật</a>
-        </div>
+            </section><!-- /.panel-left -->
 
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+            <!-- ─────────────────────────────────────────────────
+                 RIGHT COLUMN: X-RAY MOTHERBOARD (Live Status)
+            ──────────────────────────────────────────────────── -->
+            <aside class="panel-right" aria-label="X-Ray Motherboard Diagram">
+
+                <div class="panel-section-label">
+                    <span class="label-line"></span>
+                    <span class="label-text">// X-RAY_MOTHERBOARD //</span>
+                    <span class="label-line"></span>
+                </div>
+
+                <!-- Motherboard PCB container -->
+                <div class="motherboard" id="motherboard-diagram">
+                    <div class="pcb-grid-bg"></div>
+
+                    <!-- Component blocks -->
+                    <div class="mb-component cpu-socket" id="comp-cpu">
+                        <div class="comp-label">CPU</div>
+                        <div class="comp-detail">LGA Socket</div>
+                        <div class="comp-status-dot" id="cpu-status"></div>
+                    </div>
+
+                    <div class="mb-component ram-area" id="comp-ram">
+                        <div class="comp-label">RAM</div>
+                        <div class="ram-slots">
+                            <div class="ram-slot"><div class="ram-module">DIMM_1</div></div>
+                            <div class="ram-slot"><div class="ram-module">DIMM_2</div></div>
+                        </div>
+                        <div class="comp-status-dot" id="ram-status"></div>
+                    </div>
+
+                    <div class="mb-component vga-slot" id="comp-vga">
+                        <div class="comp-label">VGA</div>
+                        <div class="comp-detail">PCIe x16</div>
+                        <div class="comp-status-dot" id="vga-status"></div>
+                    </div>
+
+                    <div class="mb-component hdd-connector" id="comp-hdd">
+                        <div class="comp-label">STORAGE</div>
+                        <div class="comp-detail">SATA III</div>
+                        <div class="comp-status-dot" id="hdd-status"></div>
+                    </div>
+
+                    <div class="mb-component psu-connector" id="comp-psu">
+                        <div class="comp-label">POWER</div>
+                        <div class="comp-detail">ATX 24P</div>
+                        <div class="comp-status-dot" id="psu-status"></div>
+                    </div>
+
+                    <div class="mb-component bios-chip" id="comp-bios">
+                        <div class="comp-label">BIOS</div>
+                        <div class="comp-detail">UEFI</div>
+                        <div class="comp-status-dot" id="bios-status"></div>
+                    </div>
+
+                    <div class="mb-legend">
+                        <div class="legend-item"><span class="legend-dot ok"></span> OK</div>
+                        <div class="legend-item"><span class="legend-dot fault"></span> FAULT</div>
+                    </div>
+
+                    <div class="mb-radar-msg" id="radar-msg" style="display:none;">⚠ FAULT DETECTED</div>
+                </div>
+
+                <!-- Status Summary -->
+                <div class="radar-status-text mt-3" id="radar-description">
+                    ▸ Đang phân tích kết quả chẩn đoán...
+                </div>
+
+            </aside><!-- /.panel-right -->
+
+        </div>
+    </main>
+
+    <footer class="cyber-footer">
+        <span>EXPERT-SYS // DIAGNOSTIC_REPORT_READY</span>
+    </footer>
+
+    <!-- ════════════ JAVASCRIPT ════════════ -->
+    <script>
+    /**
+     * updateRadar(diagnosisText)
+     * Tìm từ khóa trong kết quả để làm nổi bật linh kiện bị lỗi trên bo mạch
+     */
+    function updateRadar(diagnosisText) {
+        if (!diagnosisText) return;
+        const txt = diagnosisText.toLowerCase();
+
+        const KEYWORD_MAP = [
+            { id: 'comp-ram', keywords: ['ram', 'dram', 'memory', 'ecc', 'dimm', 'bộ nhớ'], statusId: 'ram-status' },
+            { id: 'comp-cpu', keywords: ['cpu', 'processor', 'nhiệt', 'heat', 'temperature', 'vi xử lý'], statusId: 'cpu-status' },
+            { id: 'comp-vga', keywords: ['vga', 'gpu', 'vram', 'display', 'screen', 'màn hình', 'card đồ họa'], statusId: 'vga-status' },
+            { id: 'comp-hdd', keywords: ['hdd', 'ssd', 'sata', 'hard disk', 'ổ cứng', 'storage'], statusId: 'hdd-status' },
+            { id: 'comp-psu', keywords: ['psu', 'power supply', 'nguồn', 'atx', 'electricity', 'ngắn mạch'], statusId: 'psu-status' },
+            { id: 'comp-bios', keywords: ['bios', 'rom', 'cmos', 'uefi', 'firmware', 'fatal'], statusId: 'bios-status' },
+        ];
+
+        let anyFault = false;
+        let faultyComps = [];
+
+        KEYWORD_MAP.forEach(entry => {
+            const comp = document.getElementById(entry.id);
+            const dot  = document.getElementById(entry.statusId);
+            const hasFault = entry.keywords.some(kw => txt.includes(kw));
+
+            if (hasFault) {
+                comp.classList.add('comp-fault');
+                if (dot) dot.className = 'comp-status-dot dot-fault';
+                anyFault = true;
+                faultyComps.push(entry.id.replace('comp-', '').toUpperCase());
+            } else {
+                comp.classList.add('comp-ok');
+                if (dot) dot.className = 'comp-status-dot dot-ok';
+            }
+        });
+
+        const radarMsg = document.getElementById('radar-msg');
+        if (radarMsg) radarMsg.style.display = anyFault ? 'block' : 'none';
+
+        const radarDesc = document.getElementById('radar-description');
+        if (anyFault) {
+            radarDesc.innerHTML = `<span class="neon-red">⚠ QUÉT HOÀN TẤT:</span> Phát hiện lỗi tại: ${faultyComps.join(', ')}`;
+        } else {
+            radarDesc.innerHTML = `<span class="cyber-green">✔ QUÉT HOÀN TẤT:</span> Không phát hiện lỗi phần cứng nghiêm trọng.`;
+        }
+    }
+
+    // Tự động chạy radar khi load trang kết quả
+    document.addEventListener('DOMContentLoaded', () => {
+        // Thu thập toàn bộ text kết quả
+        let fullText = "";
+        
+        // Rule-based results
+        document.querySelectorAll('.cyber-result-card').forEach(card => {
+            fullText += " " + (card.dataset.conclusion || "") + " " + (card.dataset.diagnosis || "");
+            fullText += " " + card.innerText;
+        });
+
+        updateRadar(fullText);
+    });
+    </script>
 </body>
 </html>

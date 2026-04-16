@@ -21,6 +21,8 @@ services:
       - "5000:5000"
     depends_on:
       - db
+    volumes:
+      - .:/app
     environment:
       - DB_HOST=db
       - DB_USER=root
