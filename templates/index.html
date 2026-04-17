@@ -1,14 +1,19 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expert PC Troubleshooter // DIAGNOSTIC TERMINAL v2.0</title>
-    <meta name="description" content="Hệ thống chuyên gia chẩn đoán lỗi máy tính với giao diện bảng điều khiển cảm biến viễn tưởng.">
+    <meta name="description"
+        content="Hệ thống chuyên gia chẩn đoán lỗi máy tính với giao diện bảng điều khiển cảm biến viễn tưởng.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;901&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Chakra+Petch:wght@400;600;700&family=Be+Vietnam+Pro:wght@400;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body class="cyber-body">
 
     <div class="scanline-overlay" aria-hidden="true"></div>
@@ -19,13 +24,12 @@
                 <span class="logo-bracket">[</span>
                 <span class="logo-text">EXPERT-SYS</span>
                 <span class="logo-bracket">]</span>
-                <span class="logo-sub">// PC DIAGNOSTIC TERMINAL v2.0</span>
             </div>
             <div class="cyber-status-bar">
                 <span class="status-dot blink-green"></span>
-                <span class="status-text">SYS_ONLINE</span>
+                <span class="status-text">HỆ THỐNG ONLINE</span>
                 <span class="status-sep">|</span>
-                <a href="/admin" class="cyber-admin-link">⚙ ADMIN_MODULE</a>
+                <a href="/admin" class="cyber-admin-link">⚙ QUẢN TRỊ VIÊN</a>
             </div>
         </div>
     </header>
@@ -37,17 +41,18 @@
             <section class="panel-left">
                 <div class="panel-section-label">
                     <span class="label-line"></span>
-                    <span class="label-text">// SYMPTOM_MATRIX //</span>
+                    <span class="label-text">// MA TRẬN TRIỆU CHỨNG (SYMPTOMS) //</span>
                     <span class="label-line"></span>
                 </div>
 
                 <form method="post" id="diagnose-form">
-                    {% set icons = {'Audio': '◈', 'BIOS': '◎', 'Hard Disk': '▣', 'Keyboard': '◫', 'Mouse': '◉', 'Power Supply': '⚡', 'Processor': '◈', 'Serial ATA': '◐', 'Startup': '▶'} %}
+                    {% set icons = {'Audio': '◈', 'BIOS': '◎', 'Hard Disk': '▣', 'Keyboard': '◫', 'Mouse': '◉', 'Power
+                    Supply': '⚡', 'Processor': '◈', 'Serial ATA': '◐', 'Startup': '▶'} %}
 
                     {% for category, symptoms in grouped_symptoms.items() %}
                     {% set cat_loop = loop %}
                     <div class="cyber-category">
-                        <button type="button" class="cyber-cat-header" onclick="toggleCategory({{ cat_loop.index }})">
+                        <button type="button" class="cyber-cat-header" data-cat-index="{{ cat_loop.index }}" onclick="toggleCategory(this.dataset.catIndex)">
                             <span class="cat-icon">{{ icons.get(category, '◈') }}</span>
                             <span class="cat-name">{{ category }}</span>
                             <span class="cat-count">{{ symptoms|length }}×</span>
@@ -59,8 +64,10 @@
                                 {% for symptom in symptoms %}
                                 {% set unique_id = "cb_" ~ cat_loop.index ~ "_" ~ loop.index %}
                                 <label class="symptom-toggle-label" for="{{ unique_id }}">
-                                    <input class="symptom-check cyber-checkbox" type="checkbox" name="symptoms" value="{{ category }}" id="{{ unique_id }}" onchange="updateCategoryFact(this)">
-                                    <input type="checkbox" name="symptoms" value="{{ symptom }}" id="hidden_{{ unique_id }}" style="display:none">
+                                    <input class="symptom-check cyber-checkbox" type="checkbox" name="symptoms"
+                                        value="{{ category }}" id="{{ unique_id }}" onchange="updateCategoryFact(this)">
+                                    <input type="checkbox" name="symptoms" value="{{ symptom }}"
+                                        id="hidden_{{ unique_id }}" style="display:none">
                                     <span class="toggle-visual"><span class="toggle-led"></span></span>
                                     <span class="toggle-text">{{ symptom }}</span>
                                 </label>
@@ -71,38 +78,48 @@
                     {% endfor %}
 
                     <div class="panel-section-label" style="margin-top: 28px;">
-                        <span class="label-line"></span><span class="label-text">// POST_BEEP_SIGNAL //</span><span class="label-line"></span>
+                        <span class="label-line"></span>
+                        <span class="label-text">// TÍN HIỆU ÂM THANH BIOS //</span>
+                        <span class="label-line"></span>
                     </div>
 
                     <div class="beep-panel">
                         <div class="beep-mode-tabs">
-                            <button type="button" class="beep-tab active" id="tab-count" onclick="switchBeepMode('count', this)">▸ BEEP_COUNT</button>
-                            <button type="button" class="beep-tab" id="tab-duration" onclick="switchBeepMode('duration', this)">▸ BEEP_DURATION</button>
+                            <button type="button" class="beep-tab active" id="tab-count"
+                                onclick="switchBeepMode('count', this)">▸ SỐ LẦN BÍP</button>
+                            <button type="button" class="beep-tab" id="tab-duration"
+                                onclick="switchBeepMode('duration', this)">▸ ĐỘ DÀI TIẾNG BÍP</button>
                         </div>
 
                         <div id="mode-count">
-                            <label class="cyber-label">SỐ LẦN BEEP:</label>
-                            <select name="beep" id="beep-count-select" class="cyber-select" onchange="previewBeep(this.value)">
-                                <option value="">-- NONE --</option>
+                            <label class="cyber-label">LOẠI TÍN HIỆU BÍP:</label>
+                            <select name="beep" id="beep-count-select" class="cyber-select"
+                                onchange="previewBeep(this.value)">
+                                <option value="">-- KHÔNG CÓ --</option>
                                 <option value="1 beep">1× — OK/DRAM</option>
-                                <option value="2 beeps">2× — RAM Parity</option>
-                                <option value="3 beeps">3× — RAM 64K</option>
-                                <option value="4 beeps">4× — Timer fail</option>
-                                <option value="5 beeps">5× — CPU fail</option>
-                                <option value="6 beeps">6× — KB Ctrl</option>
-                                <option value="7 beeps">7× — Virtual Mode</option>
-                                <option value="8 beeps">8× — VRAM fail</option>
-                                <option value="9+ beeps">9+× — BIOS fail</option>
+                                <option value="2 beeps">2× — Lỗi chẵn lẻ RAM</option>
+                                <option value="3 beeps">3× — Lỗi 64K RAM</option>
+                                <option value="4 beeps">4× — Lỗi Timer</option>
+                                <option value="5 beeps">5× — Lỗi CPU</option>
+                                <option value="6 beeps">6× — Lỗi KB Ctrl</option>
+                                <option value="7 beeps">7× — Lỗi Chế độ ảo</option>
+                                <option value="8 beeps">8× — Lỗi VRAM</option>
+                                <option value="9+ beeps">9+× — Lỗi BIOS</option>
                             </select>
                         </div>
 
                         <div id="mode-duration" style="display:none">
-                            <label class="cyber-label">ĐỘ DÀI TIẾNG BEEP:</label>
+                            <label class="cyber-label">THỜI LƯỢNG TIẾNG BÍP:</label>
                             <div class="slider-wrapper">
-                                <input type="range" id="beep-duration-slider" min="0" max="5" step="1" value="0" class="cyber-slider" oninput="updateBeepSlider(this.value)">
-                                <div class="slider-ticks"><span>VS</span><span>S</span><span>M</span><span>L</span><span>VL</span><span>CONT</span></div>
+                                <input type="range" id="beep-duration-slider" min="0" max="5" step="1" value="0"
+                                    class="cyber-slider" oninput="updateBeepSlider(this.value)">
+                                <div class="slider-ticks">
+                                    <span>RN</span><span>N</span><span>TB</span><span>D</span><span>RD</span><span>LT</span>
+                                </div>
                             </div>
-                            <div class="slider-value-display"><span class="sv-value" id="slider-display-text">Very Short (0.2s)</span></div>
+                            <div class="slider-value-display">
+                                <span class="sv-value" id="slider-display-text">Rất Ngắn (0.2s)</span>
+                            </div>
                             <input type="hidden" name="beep" id="hidden_beep_duration" value="Very Short">
                         </div>
 
@@ -114,7 +131,8 @@
                     </div>
 
                     <button type="submit" class="cyber-submit-btn" id="btn-diagnose">
-                        <span class="btn-bracket">[</span> EXECUTING_DIAGNOSTIC <span class="btn-bracket">]</span>
+                        <span class="btn-bracket">[</span> KHỞI ĐỘNG CHẨN ĐOÁN (DIAGNOSTIC) <span
+                            class="btn-bracket">]</span>
                     </button>
                 </form>
             </section>
@@ -122,56 +140,134 @@
             <!-- RIGHT COLUMN: X-RAY -->
             <aside class="panel-right">
                 <div class="panel-section-label">
-                    <span class="label-line"></span><span class="label-text">// X-RAY_MOTHERBOARD //</span><span class="label-line"></span>
+                    <span class="label-line"></span>
+                    <span class="label-text">// X-RAY MOTHERBOARD //</span>
+                    <span class="label-line"></span>
                 </div>
                 <div class="motherboard" id="motherboard-diagram">
+                    <!-- LASER SCAN EFFECT -->
+                    <div class="laser-scan-line" id="laser-scan"></div>
                     <div class="pcb-grid-bg"></div>
-                    <div class="mb-component cpu-socket" id="comp-cpu"><div class="comp-label">CPU</div><div class="comp-status-dot" id="cpu-status"></div></div>
-                    <div class="mb-component ram-area" id="comp-ram"><div class="comp-label">RAM</div><div class="comp-status-dot" id="ram-status"></div></div>
-                    <div class="mb-component vga-slot" id="comp-vga"><div class="comp-label">VGA</div><div class="comp-status-dot" id="vga-status"></div></div>
-                    <div class="mb-component hdd-connector" id="comp-hdd"><div class="comp-label">STORAGE</div><div class="comp-status-dot" id="hdd-status"></div></div>
-                    <div class="mb-component psu-connector" id="comp-psu"><div class="comp-label">POWER</div><div class="comp-status-dot" id="psu-status"></div></div>
-                    <div class="mb-component bios-chip" id="comp-bios"><div class="comp-label">BIOS</div><div class="comp-status-dot" id="bios-status"></div></div>
+                    <div class="mb-component cpu-socket" id="comp-cpu">
+                        <div class="comp-label">CPU</div>
+                        <div class="comp-status-dot" id="cpu-status"></div>
+                    </div>
+                    <div class="mb-component ram-area" id="comp-ram">
+                        <div class="comp-label">RAM</div>
+                        <div class="comp-status-dot" id="ram-status"></div>
+                    </div>
+                    <div class="mb-component vga-slot" id="comp-vga">
+                        <div class="comp-label">VGA</div>
+                        <div class="comp-status-dot" id="vga-status"></div>
+                    </div>
+                    <div class="mb-component hdd-connector" id="comp-hdd">
+                        <div class="comp-label">LƯU TRỮ (STORAGE)</div>
+                        <div class="comp-status-dot" id="hdd-status"></div>
+                    </div>
+                    <div class="mb-component psu-connector" id="comp-psu">
+                        <div class="comp-label">NGUỒN (POWER)</div>
+                        <div class="comp-status-dot" id="psu-status"></div>
+                    </div>
+                    <div class="mb-component bios-chip" id="comp-bios">
+                        <div class="comp-label">BIOS</div>
+                        <div class="comp-status-dot" id="bios-status"></div>
+                    </div>
                     <div class="mb-legend">
                         <div class="legend-item"><span class="legend-dot ok"></span> OK</div>
-                        <div class="legend-item"><span class="legend-dot fault"></span> FAULT</div>
+                        <div class="legend-item"><span class="legend-dot fault"></span> LỖI (FAULT)</div>
                     </div>
                 </div>
             </aside>
+
         </div>
     </main>
 
     <script>
-    const BEEP_PREVIEW = {
-        "1 beep": { sev: "normal", label: "1×", diag: "POST OK" }, "2 beeps": { sev: "error", label: "2×", diag: "RAM Parity" }, "3 beeps": { sev: "error", label: "3×", diag: "RAM 64K" }, "4 beeps": { sev: "error", label: "4×", diag: "Timer Fail" }, "5 beeps": { sev: "critical", label: "5×", diag: "CPU Fault" }, "6 beeps": { sev: "error", label: "6×", diag: "KB Ctrl" }, "7 beeps": { sev: "critical", label: "7×", diag: "Virtual Mode" }, "8 beeps": { sev: "error", label: "8×", diag: "VRAM Fail" }, "9+ beeps": { sev: "critical", label: "9+×", diag: "BIOS Fail" },
-        "Very Short": { sev: "normal", label: "V.Short", diag: "System OK" }, "Short": { sev: "warning", label: "Short", diag: "POST Warn" }, "Medium": { sev: "error", label: "Medium", diag: "RAM Error" }, "Long": { sev: "error", label: "Long", diag: "MB Error" }, "Very Long": { sev: "critical", label: "V.Long", diag: "PSU/CPU Error" }, "Continuous": { sev: "critical", label: "CONT", diag: "Short Circuit" }
-    };
-    function previewBeep(v) {
-        const b = document.getElementById('beep-preview'); if (!v) { b.classList.remove('show'); return; }
-        const i = BEEP_PREVIEW[v]; if (!i) return;
-        document.getElementById('preview-label').textContent = i.label;
-        const s = document.getElementById('preview-severity'); s.textContent = i.sev.toUpperCase(); s.className = 'preview-sev-badge sev-' + i.sev;
-        document.getElementById('preview-diagnosis').textContent = i.diag; b.classList.add('show');
-    }
-    const SLIDER_MAP = [{d: "Very Short (0.2s)", v: "Very Short"}, {d: "Short (0.5s)", v: "Short"}, {d: "Medium (1.0s)", v: "Medium"}, {d: "Long (2.0s)", v: "Long"}, {d: "Very Long (4.0s)", v: "Very Long"}, {d: "Continuous (∞)", v: "Continuous"}];
-    function updateBeepSlider(v) {
-        const e = SLIDER_MAP[v]; document.getElementById('slider-display-text').textContent = e.d; document.getElementById('hidden_beep_duration').value = e.v; previewBeep(e.v);
-        document.getElementById('beep-duration-slider').style.setProperty('--fill-pct', (v/5)*100 + '%');
-    }
-    function switchBeepMode(m, el) {
-        document.querySelectorAll('.beep-tab').forEach(t => t.classList.remove('active')); el.classList.add('active');
-        document.getElementById('mode-count').style.display = (m === 'count' ? '' : 'none'); document.getElementById('mode-duration').style.display = (m === 'duration' ? '' : 'none');
-        document.getElementById('beep-count-select').name = (m === 'count' ? 'beep' : 'beep_off');
-        document.getElementById('hidden_beep_duration').name = (m === 'duration' ? 'beep' : 'beep_off');
-    }
-    function updateCategoryFact(cb) {
-        const hidden = document.getElementById('hidden_' + cb.id); if (hidden) hidden.checked = cb.checked;
-    }
-    function toggleCategory(i) {
-        const b = document.getElementById('cat-body-' + i); b.classList.toggle('open'); b.classList.toggle('closed');
-        document.getElementById('chevron-' + i).textContent = b.classList.contains('open') ? '▼' : '▶';
-    }
-    document.addEventListener('DOMContentLoaded', () => { updateBeepSlider(0); });
+        const BEEP_PREVIEW = {
+            "1 beep": { sev: "normal", label: "1×", diag: "Hệ thống OK" },
+            "2 beeps": { sev: "error", label: "2×", diag: "Lỗi chẵn lẻ RAM" },
+            "3 beeps": { sev: "error", label: "3×", diag: "Lỗi 64K RAM" },
+            "4 beeps": { sev: "error", label: "4×", diag: "Lỗi Timer" },
+            "5 beeps": { sev: "critical", label: "5×", diag: "Lỗi CPU" },
+            "6 beeps": { sev: "error", label: "6×", diag: "Lỗi KB Ctrl" },
+            "7 beeps": { sev: "critical", label: "7×", diag: "Lỗi Chế độ ảo" },
+            "8 beeps": { sev: "error", label: "8×", diag: "Lỗi VRAM" },
+            "9+ beeps": { sev: "critical", label: "9+×", diag: "Lỗi BIOS" },
+            "Very Short": { sev: "normal", label: "Rất Ngắn", diag: "Hệ thống OK" },
+            "Short": { sev: "warning", label: "Ngắn", diag: "Cảnh báo POST" },
+            "Medium": { sev: "error", label: "Trung Bình", diag: "Lỗi RAM" },
+            "Long": { sev: "error", label: "Dài", diag: "Lỗi Mainboard" },
+            "Very Long": { sev: "critical", label: "Rất Dài", diag: "Lỗi Nguồn/CPU" },
+            "Continuous": { sev: "critical", label: "Liên Tục", diag: "Ngắn mạch" }
+        };
+
+        const SLIDER_MAP = [
+            { d: "Rất Ngắn (0.2s)", v: "Very Short" },
+            { d: "Ngắn (0.5s)", v: "Short" },
+            { d: "Trung Bình (1s)", v: "Medium" },
+            { d: "Dài (2.0s)", v: "Long" },
+            { d: "Rất Dài (4.0s)", v: "Very Long" },
+            { d: "Liên Tục (∞)", v: "Continuous" }
+        ];
+
+        function previewBeep(v) {
+            const box = document.getElementById('beep-preview');
+            if (!v) { box.classList.remove('show'); return; }
+            const info = BEEP_PREVIEW[v];
+            if (!info) return;
+            document.getElementById('preview-label').textContent = info.label;
+            const sev = document.getElementById('preview-severity');
+            sev.textContent = info.sev.toUpperCase();
+            sev.className = 'preview-sev-badge sev-' + info.sev;
+            document.getElementById('preview-diagnosis').textContent = info.diag;
+            box.classList.add('show');
+        }
+
+        function updateBeepSlider(v) {
+            const entry = SLIDER_MAP[v];
+            document.getElementById('slider-display-text').textContent = entry.d;
+            document.getElementById('hidden_beep_duration').value = entry.v;
+            document.getElementById('beep-duration-slider').style.setProperty('--fill-pct', (v / 5) * 100 + '%');
+            previewBeep(entry.v);
+        }
+
+        function switchBeepMode(mode, el) {
+            document.querySelectorAll('.beep-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('mode-count').style.display = (mode === 'count' ? '' : 'none');
+            document.getElementById('mode-duration').style.display = (mode === 'duration' ? '' : 'none');
+            document.getElementById('beep-count-select').name = (mode === 'count' ? 'beep' : 'beep_off');
+            document.getElementById('hidden_beep_duration').name = (mode === 'duration' ? 'beep' : 'beep_off');
+        }
+
+        function updateCategoryFact(cb) {
+            const hidden = document.getElementById('hidden_' + cb.id);
+            if (hidden) hidden.checked = cb.checked;
+        }
+
+        function toggleCategory(i) {
+            const body = document.getElementById('cat-body-' + i);
+            body.classList.toggle('open');
+            body.classList.toggle('closed');
+            document.getElementById('chevron-' + i).textContent = body.classList.contains('open') ? '▼' : '▶';
+        }
+
+        // Laser Scan: intercept submit, play animation, then submit for real
+        document.getElementById('diagnose-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-diagnose');
+            const laser = document.getElementById('laser-scan');
+
+            btn.innerHTML = '<span class="btn-bracket">[</span> ĐANG QUÉT HỆ THỐNG... <span class="blink-green" style="display:inline-block;margin-left:8px;width:8px;height:8px;"></span> <span class="btn-bracket">]</span>';
+            btn.style.pointerEvents = 'none';
+            btn.style.opacity = '0.8';
+            laser.classList.add('scanning');
+
+            setTimeout(() => { HTMLFormElement.prototype.submit.call(this); }, 1500);
+        });
+
+        document.addEventListener('DOMContentLoaded', () => { updateBeepSlider(0); });
     </script>
 </body>
+
 </html>

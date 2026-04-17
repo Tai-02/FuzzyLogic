@@ -3,31 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Expert PC Troubleshooter // DIAGNOSTIC RESULT</title>
-    <!-- Google Font: Monospace sci-fi feel -->
+    <title>Expert PC Troubleshooter // KẾT QUẢ CHẨN ĐOÁN</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Chakra+Petch:wght@400;600;700&family=Be+Vietnam+Pro:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body class="cyber-body">
 
-    <!-- ── SCANLINE OVERLAY ── -->
     <div class="scanline-overlay" aria-hidden="true"></div>
 
-    <!-- ── TOP HEADER ── -->
     <header class="cyber-header" role="banner">
         <div class="cyber-header-inner">
             <div class="cyber-logo">
                 <span class="logo-bracket">[</span>
                 <span class="logo-text">EXPERT-SYS</span>
                 <span class="logo-bracket">]</span>
-                <span class="logo-sub">// DIAGNOSTIC_OUTPUT_v2.0</span>
+                <span class="logo-sub">// KẾT_QUẢ_PHÂN_TÍCH_v2.0</span>
             </div>
             <div class="cyber-status-bar">
                 <span class="status-dot blink-green"></span>
-                <span class="status-text">ANALYSIS_COMPLETE</span>
+                <span class="status-text">PHÂN TÍCH HOÀN TẤT</span>
                 <span class="status-sep">|</span>
-                <a href="/" class="cyber-admin-link">◂ NEW_SCAN</a>
+                <a href="/" class="cyber-admin-link">[ ◂ QUÉT MỚI ]</a>
             </div>
         </div>
     </header>
@@ -35,19 +32,17 @@
     <main class="cyber-main">
         <div class="cyber-grid">
 
-            <!-- ─────────────────────────────────────────────────
-                 LEFT COLUMN: DIAGNOSTIC RESULTS
-            ──────────────────────────────────────────────────── -->
+            <!-- LEFT COLUMN: DIAGNOSTIC RESULTS -->
             <section class="panel-left" aria-label="Diagnostic Results">
 
                 <div class="panel-section-label">
                     <span class="label-line"></span>
-                    <span class="label-text">// DIAGNOSTIC_DATA_PACK //</span>
+                    <span class="label-text">// CƠ SỞ DỮ LIỆU CHẨN ĐOÁN //</span>
                     <span class="label-line"></span>
                 </div>
 
                 <div class="result-summary-box mb-4">
-                    <span class="summary-label">SYMPTOMS_LOGGED:</span>
+                    <span class="summary-label">TRIỆU CHỨNG GHI NHẬN (SYMPTOMS_LOGGED):</span>
                     <div class="symptom-badges">
                         {% for s in selected_symptoms %}
                         <span class="cyber-badge-sm">{{ s }}</span>
@@ -55,19 +50,19 @@
                     </div>
                 </div>
 
-                <!-- ========== RULE-BASED RESULTS ========== -->
-                <div class="panel-sub-label">▸ ENGINE_01: FORWARD_CHAINING</div>
+                <!-- ENGINE 01: RULE-BASED -->
+                <div class="panel-sub-label">▸ CỘT CƠ SỞ 01: SUY DIỄN TIẾN (FORWARD_CHAINING)</div>
 
                 {% if results %}
                     {% for r in results %}
                     <div class="cyber-result-card fault-detected" data-conclusion="{{ r.conclusion }}">
                         <div class="result-card-header">
                             <span class="r-icon">⚠</span>
-                            <span class="r-conclusion">KẾT LUẬN: {{ r.conclusion }}</span>
+                            <span class="r-conclusion">KẾT LUẬN CHẨN ĐOÁN: {{ r.conclusion }}</span>
                         </div>
                         <div class="result-card-body">
                             <div class="r-detail">
-                                <span class="d-label">MATCHED_FACTS:</span>
+                                <span class="d-label">ĐIỀU KIỆN KHỚP (MATCHED_FACTS):</span>
                                 <div class="d-content">
                                     {% for cond in r.matched_conditions %}
                                     <span class="fact-tag">{{ cond }}</span>
@@ -75,7 +70,7 @@
                                 </div>
                             </div>
                             <div class="r-solution-box">
-                                <div class="s-header">✅ PROPOSED_SOLUTION:</div>
+                                <div class="s-header">✅ HƯỚNG KHẮC PHỤC (PROPOSED_SOLUTION):</div>
                                 <div class="s-content">{{ r.solution }}</div>
                             </div>
                         </div>
@@ -84,63 +79,59 @@
                 {% else %}
                     <div class="cyber-no-results">
                         <div class="no-res-icon">?</div>
-                        <div class="no-res-msg">NO MATCHING RULES FOUND IN DATABASE.</div>
+                        <div class="no-res-msg">[!] LỖI: KHÔNG TÌM THẤY CHỈ THỊ TRONG CƠ SỞ TRI THỨC</div>
                     </div>
                 {% endif %}
 
-                <!-- ========== FUZZY LOGIC RESULTS ========== -->
-                <div class="panel-sub-label mt-4">▸ ENGINE_02: FUZZY_BEEP_ANALYSER</div>
+                <!-- ENGINE 02: FUZZY BEEP -->
+                <div class="panel-sub-label mt-4">▸ CỘT CƠ SỞ 02: PHÂN TÍCH ÂM THANH FUZZY</div>
 
                 {% if beep and beep.linguistic_label %}
                     {% set sev = beep.severity %}
                     <div class="cyber-result-card beep-result sev-{{ sev }}" data-diagnosis="{{ beep.diagnosis }}">
                         <div class="result-card-header">
                             <span class="r-icon">🔔</span>
-                            <span class="r-conclusion">Loại Beep: "{{ beep.linguistic_label }}"</span>
+                            <span class="r-conclusion">Tín hiệu Beep: "{{ beep.linguistic_label }}"</span>
                             <span class="cyber-badge-sev ms-auto {{ sev }}">{{ sev|upper }}</span>
                         </div>
                         <div class="result-card-body">
                             <div class="r-detail">
-                                <span class="d-label">DIAGNOSIS_HINT:</span>
+                                <span class="d-label">KẾT LUẬN CHẨN ĐOÁN:</span>
                                 <span class="d-content highlight">{{ beep.diagnosis }}</span>
                             </div>
                             <div class="r-solution-box">
-                                <div class="s-header">✅ ACTION_PLAN:</div>
+                                <div class="s-header">✅ QUY TRÌNH XỬ LÝ (ACTION_PLAN):</div>
                                 <div class="s-content">{{ beep.solution }}</div>
                             </div>
                             {% if beep.bios_ref %}
-                            <div class="bios-ref-tag">REF: {{ beep.bios_ref }}</div>
+                            <div class="bios-ref-tag">THAM CHIẾU: {{ beep.bios_ref }}</div>
                             {% endif %}
                         </div>
                     </div>
                 {% else %}
                     <div class="cyber-no-results">
-                        <div class="no-res-msg">NO BEEP SIGNAL RECORDED.</div>
+                        <div class="no-res-msg">[!] KHÔNG CÓ TÍN HIỆU ÂM THANH BIOS</div>
                     </div>
                 {% endif %}
 
                 <div class="text-center mt-4 pt-2">
-                    <a href="/" class="cyber-btn-outline">🔄 RETRY_DIAGNOSTIC</a>
+                    <a href="/" class="cyber-btn-outline">[ 🔄 CHẨN ĐOÁN LẠI ]</a>
                 </div>
 
-            </section><!-- /.panel-left -->
+            </section>
 
-            <!-- ─────────────────────────────────────────────────
-                 RIGHT COLUMN: X-RAY MOTHERBOARD (Live Status)
-            ──────────────────────────────────────────────────── -->
+            <!-- RIGHT COLUMN: X-RAY MOTHERBOARD -->
             <aside class="panel-right" aria-label="X-Ray Motherboard Diagram">
 
                 <div class="panel-section-label">
                     <span class="label-line"></span>
-                    <span class="label-text">// X-RAY_MOTHERBOARD //</span>
+                    <span class="label-text">// X-RAY MOTHERBOARD //</span>
                     <span class="label-line"></span>
                 </div>
 
-                <!-- Motherboard PCB container -->
                 <div class="motherboard" id="motherboard-diagram">
                     <div class="pcb-grid-bg"></div>
 
-                    <!-- Component blocks -->
                     <div class="mb-component cpu-socket" id="comp-cpu">
                         <div class="comp-label">CPU</div>
                         <div class="comp-detail">LGA Socket</div>
@@ -163,13 +154,13 @@
                     </div>
 
                     <div class="mb-component hdd-connector" id="comp-hdd">
-                        <div class="comp-label">STORAGE</div>
+                        <div class="comp-label">LƯU TRỮ (STORAGE)</div>
                         <div class="comp-detail">SATA III</div>
                         <div class="comp-status-dot" id="hdd-status"></div>
                     </div>
 
                     <div class="mb-component psu-connector" id="comp-psu">
-                        <div class="comp-label">POWER</div>
+                        <div class="comp-label">NGUỒN (POWER)</div>
                         <div class="comp-detail">ATX 24P</div>
                         <div class="comp-status-dot" id="psu-status"></div>
                     </div>
@@ -182,88 +173,78 @@
 
                     <div class="mb-legend">
                         <div class="legend-item"><span class="legend-dot ok"></span> OK</div>
-                        <div class="legend-item"><span class="legend-dot fault"></span> FAULT</div>
+                        <div class="legend-item"><span class="legend-dot fault"></span> LỖI (FAULT)</div>
                     </div>
 
-                    <div class="mb-radar-msg" id="radar-msg" style="display:none;">⚠ FAULT DETECTED</div>
+                    <div class="mb-radar-msg" id="radar-msg" style="display:none;">⚠ PHÁT HIỆN LỖI</div>
                 </div>
 
-                <!-- Status Summary -->
                 <div class="radar-status-text mt-3" id="radar-description">
                     ▸ Đang phân tích kết quả chẩn đoán...
                 </div>
 
-            </aside><!-- /.panel-right -->
+            </aside>
 
         </div>
     </main>
 
     <footer class="cyber-footer">
-        <span>EXPERT-SYS // DIAGNOSTIC_REPORT_READY</span>
+        <span>EXPERT-SYS // BÁO CÁO CHẨN ĐOÁN SN-{{ range(1000, 9999) | random }}</span>
     </footer>
 
-    <!-- ════════════ JAVASCRIPT ════════════ -->
     <script>
-    /**
-     * updateRadar(diagnosisText)
-     * Tìm từ khóa trong kết quả để làm nổi bật linh kiện bị lỗi trên bo mạch
-     */
-    function updateRadar(diagnosisText) {
-        if (!diagnosisText) return;
-        const txt = diagnosisText.toLowerCase();
+        /**
+         * updateRadar() — Quét từ khóa kết quả chẩn đoán và tô sáng linh kiện lỗi trên bo mạch X-Ray.
+         */
+        function updateRadar(diagnosisText) {
+            if (!diagnosisText) return;
+            const txt = diagnosisText.toLowerCase();
 
-        const KEYWORD_MAP = [
-            { id: 'comp-ram', keywords: ['ram', 'dram', 'memory', 'ecc', 'dimm', 'bộ nhớ'], statusId: 'ram-status' },
-            { id: 'comp-cpu', keywords: ['cpu', 'processor', 'nhiệt', 'heat', 'temperature', 'vi xử lý'], statusId: 'cpu-status' },
-            { id: 'comp-vga', keywords: ['vga', 'gpu', 'vram', 'display', 'screen', 'màn hình', 'card đồ họa'], statusId: 'vga-status' },
-            { id: 'comp-hdd', keywords: ['hdd', 'ssd', 'sata', 'hard disk', 'ổ cứng', 'storage'], statusId: 'hdd-status' },
-            { id: 'comp-psu', keywords: ['psu', 'power supply', 'nguồn', 'atx', 'electricity', 'ngắn mạch'], statusId: 'psu-status' },
-            { id: 'comp-bios', keywords: ['bios', 'rom', 'cmos', 'uefi', 'firmware', 'fatal'], statusId: 'bios-status' },
-        ];
+            const KEYWORD_MAP = [
+                { id: 'comp-ram',  keywords: ['ram', 'dram', 'memory', 'ecc', 'dimm', 'bộ nhớ'],                   statusId: 'ram-status' },
+                { id: 'comp-cpu',  keywords: ['cpu', 'processor', 'nhiệt', 'heat', 'temperature', 'vi xử lý'],     statusId: 'cpu-status' },
+                { id: 'comp-vga',  keywords: ['vga', 'gpu', 'vram', 'display', 'screen', 'màn hình', 'card đồ họa'], statusId: 'vga-status' },
+                { id: 'comp-hdd',  keywords: ['hdd', 'ssd', 'sata', 'hard disk', 'ổ cứng', 'storage'],             statusId: 'hdd-status' },
+                { id: 'comp-psu',  keywords: ['psu', 'power supply', 'nguồn', 'atx', 'electricity', 'ngắn mạch'],  statusId: 'psu-status' },
+                { id: 'comp-bios', keywords: ['bios', 'rom', 'cmos', 'uefi', 'firmware', 'fatal'],                  statusId: 'bios-status' },
+            ];
 
-        let anyFault = false;
-        let faultyComps = [];
+            let anyFault    = false;
+            let faultyComps = [];
 
-        KEYWORD_MAP.forEach(entry => {
-            const comp = document.getElementById(entry.id);
-            const dot  = document.getElementById(entry.statusId);
-            const hasFault = entry.keywords.some(kw => txt.includes(kw));
+            KEYWORD_MAP.forEach(entry => {
+                const comp     = document.getElementById(entry.id);
+                const dot      = document.getElementById(entry.statusId);
+                const hasFault = entry.keywords.some(kw => txt.includes(kw));
 
-            if (hasFault) {
-                comp.classList.add('comp-fault');
-                if (dot) dot.className = 'comp-status-dot dot-fault';
-                anyFault = true;
-                faultyComps.push(entry.id.replace('comp-', '').toUpperCase());
-            } else {
-                comp.classList.add('comp-ok');
-                if (dot) dot.className = 'comp-status-dot dot-ok';
-            }
-        });
+                if (hasFault) {
+                    comp.classList.add('comp-fault');
+                    if (dot) dot.className = 'comp-status-dot dot-fault';
+                    anyFault = true;
+                    faultyComps.push(entry.id.replace('comp-', '').toUpperCase());
+                } else {
+                    comp.classList.add('comp-ok');
+                    if (dot) dot.className = 'comp-status-dot dot-ok';
+                }
+            });
 
-        const radarMsg = document.getElementById('radar-msg');
-        if (radarMsg) radarMsg.style.display = anyFault ? 'block' : 'none';
+            const radarMsg  = document.getElementById('radar-msg');
+            const radarDesc = document.getElementById('radar-description');
+            if (radarMsg) radarMsg.style.display = anyFault ? 'block' : 'none';
 
-        const radarDesc = document.getElementById('radar-description');
-        if (anyFault) {
-            radarDesc.innerHTML = `<span class="neon-red">⚠ QUÉT HOÀN TẤT:</span> Phát hiện lỗi tại: ${faultyComps.join(', ')}`;
-        } else {
-            radarDesc.innerHTML = `<span class="cyber-green">✔ QUÉT HOÀN TẤT:</span> Không phát hiện lỗi phần cứng nghiêm trọng.`;
+            radarDesc.innerHTML = anyFault
+                ? `<span class="neon-red">⚠ QUÉT HOÀN TẤT:</span> Phát hiện lỗi tại: ${faultyComps.join(', ')}`
+                : `<span class="cyber-green">✔ QUÉT HOÀN TẤT:</span> Không phát hiện lỗi phần cứng nghiêm trọng.`;
         }
-    }
 
-    // Tự động chạy radar khi load trang kết quả
-    document.addEventListener('DOMContentLoaded', () => {
-        // Thu thập toàn bộ text kết quả
-        let fullText = "";
-        
-        // Rule-based results
-        document.querySelectorAll('.cyber-result-card').forEach(card => {
-            fullText += " " + (card.dataset.conclusion || "") + " " + (card.dataset.diagnosis || "");
-            fullText += " " + card.innerText;
+        document.addEventListener('DOMContentLoaded', () => {
+            let fullText = '';
+            document.querySelectorAll('.cyber-result-card').forEach(card => {
+                fullText += ' ' + (card.dataset.conclusion || '') + ' ' + (card.dataset.diagnosis || '');
+                fullText += ' ' + card.innerText;
+            });
+            updateRadar(fullText);
         });
-
-        updateRadar(fullText);
-    });
     </script>
 </body>
 </html>
