@@ -1,83 +1,84 @@
-<h1 align="center">PC Hardware Expert System with Fuzzy Logic 💻</h1>
+<h1 align="center">EXPERT-SYS // Hệ Chuyên Gia Chẩn Đoán Máy Tính</h1>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.x-blue.svg?logo=python&logoColor=white" alt="Python">
-  <img src="https://img.shields.io/badge/Flask-Web%20Framework-black.svg?logo=flask&logoColor=white" alt="Flask">
+  <img src="https://img.shields.io/badge/Python-3.11-blue.svg?logo=python&logoColor=white" alt="Python">
+  <img src="https://img.shields.io/badge/Flask-Backend-black.svg?logo=flask&logoColor=white" alt="Flask">
   <img src="https://img.shields.io/badge/MySQL-Database-4479A1.svg?logo=mysql&logoColor=white" alt="MySQL">
+  <img src="https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker&logoColor=white" alt="Docker">
   <img src="https://img.shields.io/badge/AI-Fuzzy%20Logic-magenta.svg" alt="Fuzzy Logic">
 </p>
 
 ## 📖 Giới thiệu (Introduction)
 
-Dự án này là một **Hệ chuyên gia chẩn đoán lỗi phần cứng máy tính (Expert System for Hardware Diagnosis)**, kết hợp giữa hai phương pháp:
-1. **Suy diễn tiến (Forward Chaining):** Dựa trên các triệu chứng được người dùng lựa chọn để đưa ra nguyên nhân và cách khắc phục.
-2. **Logic mờ (Fuzzy Logic):** Xử lý và phân tích các mã âm thanh bíp (Beep Codes) từ Mainboard (dựa trên số lượng bíp hoặc độ dài của bíp) để đưa ra chẩn đoán chính xác về trạng thái của hệ thống POST.
+Dự án phát triển nền tảng **Hệ chuyên gia chẩn đoán lỗi phần cứng máy tính (PC Hardware Expert System)**. Với giao diện mang phong cách **Cyberpunk UI** đậm chất viễn tưởng và kỹ thuật, hệ thống tận dụng sức mạnh trí tuệ nhân tạo thông qua:
+1. **Suy diễn tiến (Forward Chaining):** Truy vấn qua "Cơ Sở Luật" từ hàng loạt các triệu chứng hệ thống để khoanh vùng nguyên nhân và đưa ra quy trình sửa chữa.
+2. **Logic mờ (Fuzzy Logic):** Phân tích tín hiệu âm thanh POST (Beep Codes) từ BIOS thông qua thuật toán mờ, đánh giá mức độ nghiêm trọng (Severity) để cảnh báo tức thời.
 
 ---
 
 ## ✨ Tính năng nổi bật (Key Features)
 
-- 🔍 **Chẩn đoán theo triệu chứng:** Chọn nhiều triệu chứng mắc phải (VD: màn hình xanh, quạt quay nhưng không lên hình...) để hệ thống lọc ra lỗi.
-- 🔊 **Phân tích Beep Code với Fuzzy Logic:** Phân loại và chẩn đoán lỗi phần cứng dựa trên tiếng bíp của BIOS (từ 1 đến 9+ tiếng bíp, hoặc tiếng bíp ngắn/dài/liên tục).
-- 🛠️ **Giao diện quản trị (Admin Panel):** Cho phép Quản trị viên dễ dàng thêm mới, sửa đổi hoặc xóa bỏ các Luật (Rules) trực tiếp trên giao diện web (`/admin`).
-- ⚡ **Giao diện Web thân thiện:** Được xây dựng nhanh chóng bằng Flask và dễ dàng sử dụng trên trình duyệt.
+- 🔍 **Thiết kế Cyberpunk Terminal:** Trải nghiệm "Hệ điều hành cảm biến" với màu nền tĩnh vật, tia quét neon, và font chữ đơn không gian chuẩn kỹ thuật.
+- 🔊 **Ma trận chẩn đoán đa chiều:** Xử lý chẩn đoán song song lỗi phần cứng qua hộp thoại *Triệu chứng (Symptoms)* và *Tần số mờ tiếng Bíp (Fuzzy Beeps)*.
+- 🛡️ **Motherboard X-Ray Radar:** Sơ đồ bo mạch chủ 2D tích hợp hiệu ứng tia quét Laser (`Laser Scan`) với khả năng bắt tín hiệu cảnh báo màu đỏ chói khi có linh kiện phát sinh lỗi chẩn đoán.
+- ⚙️ **Core Knowledge Base Terminal:** Trạm Quản trị (`/admin`) được thiết kế bảo mật để nhập liệu và tháo gỡ Luật IF-THEN trong thời gian thực.
+- 🐳 **Triển khai 1 giây với Docker:** Đóng gói hoàn chỉnh Database và Server, sẵn sàng ảo hóa trên mọi thiết bị chấm đồ án.
 
 ---
 
-## 📂 Cấu trúc thư mục (Project Structure)
+## 📂 Kiến trúc hệ thống (Repository)
 
 ```text
 FuzzyLogic/
-├── app.py              # File chạy server Flask chính, chứa logic route và kết nối DB.
-├── fuzzy.py            # Chứa các thuật toán tập mờ (Membership functions) & Luật mờ (Fuzzy Rules).
-├── data.sql            # File script khôi phục cơ sở dữ liệu MySQL định dạng các luật.
-├── static/             # Thư mục chứa tài nguyên tĩnh: CSS, JavaScript, Hình ảnh,...
-├── templates/          # Thư mục giao diện HTML:
-│   ├── index.html      # Trang chủ (chọn triệu chứng).
-│   ├── result.html     # Kết quả chẩn đoán.
-│   └── admin.html      # Trang quản lý các quy tắc luật.
-└── README.md           # Tài liệu hướng dẫn này.
+├── app.py              # Main Flask Engine // Route & Logic Điều Khiển
+├── fuzzy.py            # AI Module // Không gian Logic Mờ & Thuật toán thành viên
+├── data.sql            # Core Data // Chứa Database Schema chứa Core Rules
+├── docker-compose.yml  # Container Orchestration // Tự động ảo hóa môi trường
+├── Dockerfile          # Image Builder // Config Python Worker
+├── static/             # Assets tĩnh
+│   └── style.css       # Design System // Hệ thống UI Cyberpunk & Animation Laser
+└── templates/          # Jinja2 Layouts
+    ├── index.html      # Trạm điều khiển chẩn đoán (Diagnostic Terminal)
+    ├── result.html     # Kết quả suy diễn với Sơ đồ X-Ray (Result Radar)
+    └── admin.html      # Trạm nạp tri thức gốc (Core_KB)
 ```
 
 ---
 
-## 🚀 Cài đặt và Chạy thử (Installation & Setup)
+## 🚀 Khởi chạy hệ thống nghiệm thu (Quick Start)
 
-### Yêu cầu hệ thống (Prerequisites)
-- [Python 3.8+](https://www.python.org/downloads/)
-- [MySQL Server](https://dev.mysql.com/downloads/installer/) (hoặc XAMPP/WAMP)
-- Virtual Environment (Tuỳ chọn nhưng khuyến khích)
+Dự án này đã được đóng gói toàn diện bằng Docker để đơn giản hóa quá trình chạy đồ án. Tránh xung đột môi trường Python 100%.
 
-### Các bước thực hiện
+### Cách 1: Khởi động siêu tốc bằng Docker (Khuyên dùng 🌟)
+*Yêu cầu môi trường đã cài đặt Docker Desktop.*
 
-**Bước 1: Clone/Tải dự án về máy**
-Di chuyển file project vào một thư mục, ví dụ `d:\source code\FuzzyLogic`.
+1. Mở Terminal / PowerShell tại thư mục đồ án:
+   ```bash
+   cd "d:\source code\FuzzyLogic"
+   ```
+2. Kéo hệ thống Online bằng lệnh cơ bản:
+   ```bash
+   docker-compose up -d --build
+   ```
+3. Sau 30s hệ cơ sở dữ liệu khởi tạo xong, truy cập bằng trình duyệt web:
+   👉 **http://localhost:5000**
 
-**Bước 2: Cài đặt thư viện Python**
-Mở terminal/cmd tại thư mục dự án và chạy:
-```bash
-pip install flask mysql-connector-python
-```
+*Lưu ý: Bạn có thể sửa trực tiếp HTML/CSS, Web sẽ tự nhận lệnh mà không cần tắt Docker.*
 
-**Bước 3: Thiết lập cơ sở dữ liệu**
-1. Mở MySQL/phpMyAdmin lên.
-2. Tạo một database mới tên là: `expert_system`.
-3. Import file `data.sql` có sẵn trong thư mục để tạo bảng `rules` và các dữ liệu mẫu.
-4. *Lưu ý:* Mở file `app.py` (dòng 7-12) và sửa thông tin đăng nhập MySQL nếu máy bạn dùng password khác (mặc định trong code đang là user `root`, password `0866582512`).
+### Cách 2: Khởi chạy môi trường thuần (Manual)
+*Yêu cầu: Đã cài Local MySQL server và Python 3.8+*
 
-**Bước 4: Khởi chạy ứng dụng**
-Tại terminal trong thư mục `FuzzyLogic`, chạy lệnh sau để khởi động server:
-```bash
-python app.py
-```
-Ứng dụng sẽ chạy tại địa chỉ: `http://localhost:5000` hoặc `http://127.0.0.1:5000`.
+1. Đổ dữ liệu file `data.sql` vào MySQL Database (Tên DB: `expert_system`).
+2. Sửa Pass DB nội bộ tại 4 biến môi trường đầu chuỗi nằm ở đoạn `app.py`.
+3. Tải các package liên kết: `pip install flask mysql-connector-python`
+4. Lên sóng máy chủ: `python app.py`
 
 ---
 
-## 🧰 Hướng dẫn sử dụng (Usage)
+## 🧰 Kịch bản sử dụng (Operation Protocol)
 
-- **Trang chủ (`/`):** Tích chọn các triệu chứng phần cứng mà bạn đang gặp phải, có thể chọn kèm tiếng Beep của BIOS, sau đó nhấn "Chẩn đoán".
-- **Trang quản trị (`/admin`):** Khu vực để thêm luật IF-THEN mới cho hệ chuyên gia.
+- **Trạm chẩn đoán (`/`):** Bật các nút gạt chẩn đoán (Toggles), chọn tín hiệu âm thanh thu được, bấm lệnh `[ KHỞI ĐỘNG CHẨN ĐOÁN ]` và xem Radar tia Laser quét X-Ray hoạt động.
+- **Trạm nạp lượng tử (`/admin`):** Thêm các dòng "Điều Kiện", "Kết Luận" ngăn cách nhau qua dấu phẩy (,) rồi nạp vào Database.
 
 ---
-*Phát triển cho mục đích học tập và nghiên cứu AI - Hệ chuyên gia (Expert Systems) & Logic mờ (Fuzzy Logic).*
+*> // PHẦN MỀM THUỘC SỞ HỮU TRÍ TUỆ ĐỒ ÁN MÔN HỌC HỆ CHUYÊN GIA — CÔNG NGHỆ FLASK & FUZZY AI //*
