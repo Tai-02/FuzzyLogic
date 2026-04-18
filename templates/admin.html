@@ -96,7 +96,7 @@
                     <table class="cyber-table" id="rule-table">
                         <thead>
                             <tr>
-                                <th style="width:60px">ID_CHỈ_THỊ</th>
+                                <th style="width:60px">ID_DIRECTIVE</th>
                                 <th>ĐIỀU KIỆN (CONDITIONS)</th>
                                 <th>KẾT LUẬN (CONCLUSION)</th>
                                 <th>HƯỚNG KHẮC PHỤC (SOLUTION)</th>
@@ -104,7 +104,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for r in rules %}
+                            {% for r in rules|sort(attribute='id') %}
                             <tr class="rule-row">
                                 <td class="cell-id">{{ r.id }}</td>
                                 <td class="cell-conditions">

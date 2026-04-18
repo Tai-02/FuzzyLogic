@@ -465,8 +465,10 @@ body.cyber-body {
     background: transparent;
     border: 1px solid var(--cyber-border);
     color: var(--cyber-text-dim);
-    font-family: var(--cyber-font-mono);
-    font-size: 0.75rem;
+    font-family: var(--cyber-font-head);
+    font-size: 0.72rem;
+    letter-spacing: 1px;
+    font-weight: 600;
     letter-spacing: 1px;
     padding: 6px 14px;
     border-radius: 3px;
@@ -1947,12 +1949,15 @@ body.cyber-body {
         top: 0;
         opacity: 0;
     }
+
     10% {
         opacity: 1;
     }
+
     90% {
         opacity: 1;
     }
+
     100% {
         top: 100%;
         opacity: 0;
