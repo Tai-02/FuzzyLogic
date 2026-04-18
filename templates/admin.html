@@ -3,115 +3,143 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Quản lý cơ sở tri thức</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <title>Expert PC Troubleshooter // QUẢN TRỊ VIÊN</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Chakra+Petch:wght@400;600;700&family=Be+Vietnam+Pro:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
-    <div class="container py-4" style="max-width: 1000px;">
+<body class="cyber-body">
 
-        <div class="header-card">
-            <h4 class="mb-1">⚙️ Quản lý cơ sở tri thức (Knowledge Base)</h4>
-            <p class="mb-0 opacity-75 small">Thêm, xem và xóa các production rules trong rule-base</p>
+    <div class="scanline-overlay" aria-hidden="true"></div>
+
+    <header class="cyber-header" role="banner">
+        <div class="cyber-header-inner">
+            <div class="cyber-logo">
+                <span class="logo-bracket">[</span>
+                <span class="logo-text">EXPERT-SYS</span>
+                <span class="logo-bracket">]</span>
+                <span class="logo-sub">// QUẢN_TRỊ_HỆ_THỐNG — BIÊN TẬP TRI THỨC</span>
+            </div>
+            <div class="cyber-status-bar">
+                <span class="status-dot blink-green"></span>
+                <span class="status-text">QUYỀN TRUY CẬP CAO NHẤT</span>
+                <span class="status-sep">|</span>
+                <a href="/" class="cyber-admin-link">◂ TRANG CHẨN ĐOÁN</a>
+            </div>
         </div>
+    </header>
 
+    <main class="cyber-main" style="max-width: 1100px; margin: 0 auto; padding: 28px 16px;">
+
+        <!-- FLASH MESSAGE -->
         {% if message %}
-        <div class="alert alert-{{ 'success' if message.type == 'success' else 'danger' }} alert-dismissible fade show">
-            {{ message.text }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        <div class="admin-alert admin-alert-{{ message.type }}">
+            <span class="aa-icon">{% if message.type == 'success' %}✔{% else %}✖{% endif %}</span>
+            <span class="aa-text">{{ message.text }}</span>
+            <button class="aa-close" onclick="this.parentElement.style.display='none'">✕</button>
         </div>
         {% endif %}
 
-        <div class="card add-card">
-            <div class="card-header bg-success text-white fw-semibold">
-                ➕ Thêm luật mới vào rule-base
+        <!-- SECTION 1: ADD RULE -->
+        <div class="admin-panel inject-panel">
+            <div class="admin-panel-header">
+                <span class="ap-icon">⚡</span>
+                <span class="ap-title">TRẠM ĐIỀU KHIỂN TRI THỨC GỐC (CORE_KB)</span>
+                <span class="ap-badge ap-badge-warn">GHI_DỮ_LIỆU</span>
             </div>
-            <div class="card-body">
-                <div class="help-text">
-                    <strong>📌 Hướng dẫn format conditions:</strong><br>
-                    Các điều kiện phân cách nhau bằng <strong>dấu phẩy</strong>.<br>
-                    Ví dụ: <code>Audio, Sound Card can't be Detected</code><br>
-                    → Điều kiện 1: <em>Audio</em> | Điều kiện 2: <em>Sound Card can't be Detected</em>
+
+            <div class="admin-panel-body">
+                <div class="admin-hint-block">
+                    <span class="hint-prefix">// ĐỊNH DẠNG:</span>
+                    Các điều kiện phân cách nhau bằng <code class="cyber-code">dấu phẩy</code>.<br>
+                    <span class="hint-prefix">// VÍ DỤ:</span>
+                    <code class="cyber-code">Audio, Sound Card can't be Detected</code>
+                    &nbsp;→&nbsp; Cond_1: <em>Audio</em> | Cond_2: <em>Sound Card can't be Detected</em>
                 </div>
 
-                <form method="post">
+                <form method="post" id="form-inject-rule">
                     <input type="hidden" name="action" value="add">
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Điều kiện (IF ... AND ...)</label>
-                            <input name="conditions" class="form-control"
-                                   placeholder="Ví dụ: Audio, No Sound Output" required>
-                            <div class="form-text">Phân cách điều kiện bằng dấu phẩy</div>
+                    <div class="admin-form-grid">
+                        <div class="admin-field">
+                            <label class="cyber-label">[+] CẤU HÌNH ĐIỀU KIỆN (Conditions)</label>
+                            <input name="conditions" class="cyber-input" placeholder="e.g.: Audio, No Sound Output" required>
+                            <span class="field-hint">// Phân cách bằng dấu phẩy</span>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Kết luận (THEN)</label>
-                            <input name="conclusion" class="form-control"
-                                   placeholder="Ví dụ: Sound Card Damaged" required>
+                        <div class="admin-field">
+                            <label class="cyber-label">[+] CẤU HÌNH KẾT LUẬN (Conclusion)</label>
+                            <input name="conclusion" class="cyber-input" placeholder="e.g.: Sound Card Damaged" required>
                         </div>
-                        <div class="col-md-4">
-                            <label class="form-label fw-semibold">Giải pháp (Solution)</label>
-                            <input name="solution" class="form-control"
-                                   placeholder="Ví dụ: Replace or reinstall sound card" required>
+                        <div class="admin-field">
+                            <label class="cyber-label">[+] CẤU HÌNH HƯỚNG KHẮC PHỤC (Solution)</label>
+                            <input name="solution" class="cyber-input" placeholder="e.g.: Replace or reinstall sound card" required>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-success mt-3">
-                        💾 Lưu luật vào Database
+                    <button type="submit" class="cyber-btn-inject">
+                        <span class="btn-bracket">[</span>
+                        &gt; NẠP CHỈ THỊ &nbsp;<em>(INJECT_RULE)</em>
+                        <span class="btn-bracket">]</span>
                     </button>
                 </form>
             </div>
         </div>
 
-        <!-- DANH SÁCH LUẬT -->
-        <div class="table-container">
-            <div class="p-3 border-bottom d-flex justify-content-between align-items-center">
-                <h6 class="mb-0 fw-bold">
-                    📋 Danh sách luật hiện có
-                    <span class="badge bg-secondary">{{ rules|length }}</span>
-                </h6>
+        <!-- SECTION 2: RULE TABLE -->
+        <div class="admin-panel database-panel">
+            <div class="admin-panel-header">
+                <span class="ap-icon">▣</span>
+                <span class="ap-title">CƠ SỞ LUẬT — CÁC CHỈ THỊ ĐÃ NẠP</span>
+                <span class="ap-badge ap-badge-cyan">{{ rules|length }}&nbsp;BẢN_GHI</span>
             </div>
-            <div class="table-responsive">
-                <table class="table table-hover table-bordered mb-0">
-                    <thead>
-                        <tr>
-                            <th style="width:50px">ID</th>
-                            <th>Điều kiện (IF)</th>
-                            <th>Kết luận (THEN)</th>
-                            <th>Giải pháp</th>
-                            <th style="width:80px">Xóa</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for r in rules %}
-                        <tr>
-                            <td class="text-muted small">{{ r.id }}</td>
-                            <td>
-                                {% for cond in r.conditions.split(',') %}
-                                <span class="badge bg-primary me-1">{{ cond.strip() }}</span>
-                                {% endfor %}
-                            </td>
-                            <td>
-                                <span class="badge bg-info text-dark">{{ r.conclusion }}</span>
-                            </td>
-                            <td class="small">{{ r.solution }}</td>
-                            <td class="text-center">
-                                <form method="post" onsubmit="return confirm('Xóa luật #{{ r.id }}?')">
-                                    <input type="hidden" name="action" value="delete">
-                                    <input type="hidden" name="rule_id" value="{{ r.id }}">
-                                    <button type="submit" class="btn btn-danger btn-sm">🗑️</button>
-                                </form>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+
+            <div class="admin-panel-body" style="padding: 0;">
+                <div class="cyber-table-wrapper">
+                    <table class="cyber-table" id="rule-table">
+                        <thead>
+                            <tr>
+                                <th style="width:60px">ID_DIRECTIVE</th>
+                                <th>ĐIỀU KIỆN (CONDITIONS)</th>
+                                <th>KẾT LUẬN (CONCLUSION)</th>
+                                <th>HƯỚNG KHẮC PHỤC (SOLUTION)</th>
+                                <th style="width:100px">THAO TÁC</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in rules|sort(attribute='id') %}
+                            <tr class="rule-row">
+                                <td class="cell-id">{{ r.id }}</td>
+                                <td class="cell-conditions">
+                                    {% for cond in r.conditions.split(',') %}
+                                    <span class="cond-tag">{{ cond.strip() }}</span>
+                                    {% endfor %}
+                                </td>
+                                <td class="cell-conclusion">
+                                    <span class="conclusion-badge">{{ r.conclusion }}</span>
+                                </td>
+                                <td class="cell-solution">{{ r.solution }}</td>
+                                <td class="cell-action">
+                                    <form method="post" onsubmit="return confirm('⚠ XÓA BỎ CHỈ THỊ #{{ r.id }}? THAO TÁC NÀY KHÔNG THỂ KHÔI PHỤC.')">
+                                        <input type="hidden" name="action" value="delete">
+                                        <input type="hidden" name="rule_id" value="{{ r.id }}">
+                                        <button type="submit" class="btn-purge">[ XÓA BỎ ]</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
-        <div class="text-center mt-4">
-            <a href="/" class="btn btn-outline-primary">← Quay lại trang chẩn đoán</a>
+        <div style="text-align:center; margin-top: 28px;">
+            <a href="/" class="cyber-btn-outline">◂ QUAY LẠI TRANG CHẨN ĐOÁN</a>
         </div>
 
-    </div>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    </main>
+
+    <footer class="cyber-footer">
+        <span>EXPERT-SYS // ADMIN_MODULE — XỬ LÝ CẨN TRỌNG</span>
+    </footer>
+
 </body>
 </html>

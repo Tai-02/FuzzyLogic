@@ -1,14 +1,1175 @@
-/* ============================================================
-   Expert PC Troubleshooter – Shared Stylesheet
-   Dùng cho: index.html, result.html, admin.html
-   ============================================================ */
+/* ================================================================
+   Expert PC Troubleshooter – Master Stylesheet
+   ================================================================
+   Sections:
+     A. CSS Variables & Reset
+     B. ──── INDEX.HTML (Cyberpunk Sci-Fi Terminal Theme) ────────
+        B1.  Body & Scanline
+        B2.  Header
+        B3.  Main Layout Grid
+        B4.  Panel Labels
+        B5.  Symptom Toggle Buttons
+        B6.  Category Collapse
+        B7.  Beep Panel & Tabs
+        B8.  Stepped Range Slider
+        B9.  Beep Preview Box
+        B10. Submit Button
+        B11. X-Ray Motherboard Diagram
+        B12. Footer
+     C. ──── RESULT.HTML ─────────────────────────────────────────
+     D. ──── ADMIN.HTML  ─────────────────────────────────────────
+     E. ──── SHARED SEVERITY BADGES ─────────────────────────────
+================================================================ */
 
-/* ── Base ─────────────────────────────────────────────────── */
-body {
-    background: #f0f2f5;
+/* ── A. CSS VARIABLES & RESET ─────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Chakra+Petch:wght@400;600;700&family=Be+Vietnam+Pro:wght@400;600;700&display=swap');
+
+:root {
+    /* Core Cyberpunk Palette */
+    --cyber-bg: #050a10;
+    --cyber-bg2: #080f1a;
+    --cyber-panel: #0a1525;
+    --cyber-border: #0d2137;
+    --cyber-cyan: #00fff7;
+    --cyber-cyan-dim: #00bfb8;
+    --cyber-cyan-glow: rgba(0, 255, 247, 0.3);
+    --cyber-green: #00ff88;
+    --cyber-green-dim: #00cc6a;
+    --cyber-red: #ff3355;
+    --cyber-red-glow: rgba(255, 51, 85, 0.35);
+    --cyber-yellow: #ffe066;
+    --cyber-text: #c8e6f0;
+    --cyber-text-dim: #5a8099;
+    --cyber-font-mono: 'Share Tech Mono', 'Courier New', Consolas, monospace;
+    --cyber-font-head: 'Chakra Petch', 'Orbitron', 'Arial', sans-serif;
+    --cyber-font-body: 'Be Vietnam Pro', 'Arial', sans-serif;
+
+    /* Animation timings */
+    --dur-fast: 0.15s;
+    --dur-mid: 0.3s;
+    --dur-slow: 0.6s;
 }
 
-/* ── Header card (dùng chung mọi trang) ───────────────────── */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* ================================================================
+   B. INDEX.HTML  –  CYBERPUNK TERMINAL THEME
+================================================================ */
+
+/* ── B1. BODY & SCANLINE OVERLAY ──────────────────────────── */
+body.cyber-body {
+    background-color: var(--cyber-bg);
+    color: var(--cyber-text);
+    font-family: var(--cyber-font-body);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* CRT Scanline effect – subtle horizontal lines */
+.scanline-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    background: repeating-linear-gradient(0deg,
+            transparent,
+            transparent 2px,
+            rgba(0, 0, 0, 0.06) 2px,
+            rgba(0, 0, 0, 0.06) 4px);
+    animation: scanMove 8s linear infinite;
+}
+
+@keyframes scanMove {
+    from {
+        background-position: 0 0;
+    }
+
+    to {
+        background-position: 0 100px;
+    }
+}
+
+/* ── B2. HEADER ────────────────────────────────────────────── */
+.cyber-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(5, 10, 16, 0.92);
+    border-bottom: 1px solid var(--cyber-cyan-dim);
+    backdrop-filter: blur(12px);
+    padding: 10px 28px;
+    box-shadow: 0 0 24px rgba(0, 255, 247, 0.12);
+}
+
+.cyber-header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1400px;
+    margin: 0 auto;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.cyber-logo {
+    font-family: var(--cyber-font-head);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--cyber-cyan);
+    text-shadow: 0 0 12px var(--cyber-cyan), 0 0 24px var(--cyber-cyan-glow);
+    letter-spacing: 2px;
+}
+
+.logo-bracket {
+    opacity: 0.55;
+}
+
+.logo-sub {
+    font-family: var(--cyber-font-mono);
+    font-size: 0.7rem;
+    color: var(--cyber-text-dim);
+    margin-left: 10px;
+    letter-spacing: 1px;
+    vertical-align: middle;
+}
+
+.cyber-status-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.72rem;
+    color: var(--cyber-green);
+    letter-spacing: 1px;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.blink-green {
+    background: var(--cyber-green);
+    box-shadow: 0 0 6px var(--cyber-green);
+    animation: blinkDot 1.4s ease-in-out infinite;
+}
+
+@keyframes blinkDot {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.2;
+    }
+}
+
+.status-sep {
+    color: var(--cyber-text-dim);
+}
+
+.status-text {
+    color: var(--cyber-green);
+}
+
+.cyber-admin-link {
+    color: var(--cyber-cyan);
+    text-decoration: none;
+    border: 1px solid var(--cyber-cyan-dim);
+    padding: 3px 10px;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    transition: all var(--dur-fast);
+}
+
+.cyber-admin-link:hover {
+    background: var(--cyber-cyan);
+    color: var(--cyber-bg);
+    box-shadow: 0 0 14px var(--cyber-cyan-glow);
+}
+
+/* ── B3. MAIN LAYOUT GRID ──────────────────────────────────── */
+.cyber-main {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 24px 20px 40px;
+}
+
+.cyber-grid {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    /* Left: form | Right: motherboard */
+    gap: 24px;
+    align-items: start;
+}
+
+@media (max-width: 960px) {
+    .cyber-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Panel containers */
+.panel-left,
+.panel-right {
+    background: var(--cyber-panel);
+    border: 1px solid var(--cyber-border);
+    border-radius: 6px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Corner-cut decoration */
+.panel-left::before,
+.panel-right::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    border-top: 18px solid var(--cyber-cyan-dim);
+    border-left: 18px solid transparent;
+    opacity: 0.5;
+}
+
+/* ── B4. SECTION LABELS ────────────────────────────────────── */
+.panel-section-label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.label-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--cyber-cyan-dim));
+}
+
+.label-line:last-child {
+    background: linear-gradient(90deg, var(--cyber-cyan-dim), transparent);
+}
+
+.label-text {
+    font-family: var(--cyber-font-head);
+    font-size: 0.65rem;
+    color: var(--cyber-cyan);
+    letter-spacing: 3px;
+    white-space: nowrap;
+    text-shadow: 0 0 8px var(--cyber-cyan-glow);
+}
+
+/* ── B5. SYMPTOM TOGGLE BUTTONS ────────────────────────────── */
+.cyber-category {
+    margin-bottom: 14px;
+    border: 1px solid var(--cyber-border);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+/* Category header button */
+.cyber-cat-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    background: rgba(0, 255, 247, 0.06);
+    border: none;
+    border-bottom: 1px solid var(--cyber-border);
+    padding: 9px 14px;
+    color: var(--cyber-cyan);
+    font-family: var(--cyber-font-mono);
+    font-size: 0.82rem;
+    letter-spacing: 1px;
+    cursor: pointer;
+    text-align: left;
+    transition: background var(--dur-fast);
+}
+
+.cyber-cat-header:hover {
+    background: rgba(0, 255, 247, 0.12);
+}
+
+.cat-icon {
+    font-size: 1rem;
+    color: var(--cyber-green);
+}
+
+.cat-name {
+    flex: 1;
+}
+
+.cat-count {
+    font-size: 0.7rem;
+    color: var(--cyber-text-dim);
+    letter-spacing: 0;
+}
+
+.cat-chevron {
+    font-size: 0.7rem;
+    color: var(--cyber-cyan-dim);
+    transition: transform var(--dur-mid);
+}
+
+/* Category body */
+.cyber-cat-body {
+    overflow: hidden;
+    transition: max-height var(--dur-mid) ease, opacity var(--dur-mid) ease;
+    max-height: 0;
+    opacity: 0;
+    padding: 0 14px;
+}
+
+.cyber-cat-body.open {
+    max-height: 1000px;
+    opacity: 1;
+    padding: 12px 14px;
+}
+
+.cyber-cat-body.closed {
+    max-height: 0;
+    opacity: 0;
+    padding: 0 14px;
+}
+
+/* Symptom grid – 2 columns */
+.symptom-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+}
+
+@media (max-width: 600px) {
+    .symptom-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Toggle label (the visible "button") */
+.symptom-toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 7px 10px;
+    border: 1px solid var(--cyber-border);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: border-color var(--dur-fast), background var(--dur-fast), box-shadow var(--dur-fast);
+    background: rgba(0, 0, 0, 0.2);
+    user-select: none;
+}
+
+.symptom-toggle-label:hover {
+    border-color: var(--cyber-cyan-dim);
+    background: rgba(0, 255, 247, 0.05);
+}
+
+/* Hide actual checkbox */
+.cyber-checkbox {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+}
+
+/* LED indicator */
+.toggle-visual {
+    width: 34px;
+    height: 18px;
+    border: 1px solid var(--cyber-text-dim);
+    border-radius: 2px;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 2px;
+    flex-shrink: 0;
+    transition: border-color var(--dur-fast), background var(--dur-fast), box-shadow var(--dur-fast);
+    position: relative;
+}
+
+.toggle-led {
+    width: 12px;
+    height: 12px;
+    background: var(--cyber-text-dim);
+    border-radius: 1px;
+    transition: background var(--dur-fast), transform var(--dur-fast), box-shadow var(--dur-fast);
+}
+
+/* CHECKED STATE: neon glow */
+.cyber-checkbox:checked~.toggle-visual {
+    border-color: var(--cyber-green);
+    background: rgba(0, 255, 136, 0.1);
+    box-shadow: 0 0 8px rgba(0, 255, 136, 0.4), inset 0 0 4px rgba(0, 255, 136, 0.1);
+}
+
+.cyber-checkbox:checked~.toggle-visual .toggle-led {
+    background: var(--cyber-green);
+    transform: translateX(14px);
+    box-shadow: 0 0 6px var(--cyber-green), 0 0 12px rgba(0, 255, 136, 0.5);
+}
+
+/* Label text when checked */
+.cyber-checkbox:checked~.toggle-visual~.toggle-text {
+    color: var(--cyber-green);
+    text-shadow: 0 0 6px rgba(0, 255, 136, 0.4);
+}
+
+/* Label text – parent label selected */
+.symptom-toggle-label:has(.cyber-checkbox:checked) {
+    border-color: var(--cyber-green);
+    background: rgba(0, 255, 136, 0.06);
+    box-shadow: 0 0 10px rgba(0, 255, 136, 0.15);
+}
+
+.toggle-text {
+    font-size: 0.78rem;
+    color: var(--cyber-text-dim);
+    line-height: 1.3;
+    transition: color var(--dur-fast);
+}
+
+/* ── B6. BEEP PANEL ────────────────────────────────────────── */
+.beep-panel {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid var(--cyber-border);
+    border-radius: 4px;
+    padding: 16px;
+    margin-bottom: 20px;
+}
+
+/* Mode tabs */
+.beep-mode-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.beep-tab {
+    background: transparent;
+    border: 1px solid var(--cyber-border);
+    color: var(--cyber-text-dim);
+    font-family: var(--cyber-font-head);
+    font-size: 0.72rem;
+    letter-spacing: 1px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    padding: 6px 14px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all var(--dur-fast);
+}
+
+.beep-tab:hover {
+    border-color: var(--cyber-cyan-dim);
+    color: var(--cyber-cyan);
+}
+
+.beep-tab.active {
+    background: rgba(0, 255, 247, 0.1);
+    border-color: var(--cyber-cyan);
+    color: var(--cyber-cyan);
+    box-shadow: 0 0 10px var(--cyber-cyan-glow);
+}
+
+/* Labels inside panels */
+.cyber-label {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--cyber-cyan-dim);
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+}
+
+/* Cyber-styled select */
+.cyber-select {
+    width: 100%;
+    background: var(--cyber-bg2);
+    border: 1px solid var(--cyber-cyan-dim);
+    color: var(--cyber-text);
+    font-family: var(--cyber-font-mono);
+    font-size: 0.82rem;
+    padding: 8px 12px;
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+    transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%2300fff7' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+}
+
+.cyber-select:focus {
+    border-color: var(--cyber-cyan);
+    box-shadow: 0 0 12px var(--cyber-cyan-glow);
+}
+
+.cyber-select option {
+    background: #0a1f35;
+    color: var(--cyber-text);
+}
+
+/* ── B7. STEPPED RANGE SLIDER ──────────────────────────────── */
+.slider-wrapper {
+    margin: 8px 0 6px;
+}
+
+/* Base slider track */
+.cyber-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: linear-gradient(to right,
+            var(--cyber-cyan) 0%,
+            var(--cyber-cyan) var(--fill-pct, 0%),
+            var(--cyber-border) var(--fill-pct, 0%),
+            var(--cyber-border) 100%);
+    outline: none;
+    cursor: pointer;
+    transition: box-shadow var(--dur-fast);
+}
+
+.cyber-slider:focus {
+    box-shadow: 0 0 14px var(--cyber-cyan-glow);
+}
+
+/* Thumb */
+.cyber-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 2px;
+    background: var(--cyber-cyan);
+    border: 2px solid var(--cyber-bg);
+    box-shadow: 0 0 10px var(--cyber-cyan), 0 0 20px var(--cyber-cyan-glow);
+    cursor: pointer;
+    transition: transform var(--dur-fast), box-shadow var(--dur-fast);
+}
+
+.cyber-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    box-shadow: 0 0 16px var(--cyber-cyan), 0 0 32px var(--cyber-cyan-glow);
+}
+
+.cyber-slider::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 2px;
+    background: var(--cyber-cyan);
+    border: 2px solid var(--cyber-bg);
+    box-shadow: 0 0 10px var(--cyber-cyan);
+    cursor: pointer;
+}
+
+/* Tick labels under slider */
+.slider-ticks {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0 0;
+    font-size: 0.62rem;
+    color: var(--cyber-text-dim);
+    letter-spacing: 0.5px;
+}
+
+/* Current value display */
+.slider-value-display {
+    margin-top: 10px;
+    padding: 6px 12px;
+    background: rgba(0, 255, 247, 0.06);
+    border: 1px solid var(--cyber-cyan-dim);
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.8rem;
+}
+
+.sv-label {
+    color: var(--cyber-text-dim);
+    font-size: 0.65rem;
+    letter-spacing: 1px;
+}
+
+.sv-value {
+    color: var(--cyber-cyan);
+    font-weight: 700;
+    text-shadow: 0 0 6px var(--cyber-cyan-glow);
+}
+
+/* ── B8. BEEP PREVIEW BOX ──────────────────────────────────── */
+.beep-preview-box {
+    display: none;
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: rgba(0, 255, 247, 0.04);
+    border-left: 3px solid var(--cyber-cyan);
+    border-radius: 2px;
+    font-size: 0.8rem;
+    gap: 8px;
+    animation: fadeIn var(--dur-mid) ease;
+}
+
+.beep-preview-box.show {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.preview-header {
+    color: var(--cyber-text-dim);
+    font-size: 0.68rem;
+    letter-spacing: 1px;
+}
+
+.preview-label {
+    color: var(--cyber-cyan);
+    font-weight: 700;
+}
+
+.preview-sev-badge {
+    font-size: 0.65rem;
+    padding: 2px 8px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+    font-weight: 700;
+}
+
+.sev-ok {
+    background: rgba(0, 255, 136, 0.2);
+    color: var(--cyber-green);
+    border: 1px solid var(--cyber-green);
+}
+
+.sev-warn {
+    background: rgba(255, 224, 102, 0.2);
+    color: var(--cyber-yellow);
+    border: 1px solid var(--cyber-yellow);
+}
+
+.sev-err {
+    background: rgba(255, 51, 85, 0.15);
+    color: var(--cyber-red);
+    border: 1px solid var(--cyber-red);
+}
+
+.sev-crit {
+    background: rgba(255, 51, 85, 0.35);
+    color: #fff;
+    border: 1px solid var(--cyber-red);
+    animation: blinkRed 0.8s step-end infinite;
+}
+
+.preview-diag {
+    flex-basis: 100%;
+    color: var(--cyber-text-dim);
+    font-size: 0.75rem;
+    margin-top: 2px;
+}
+
+@keyframes blinkRed {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.4;
+    }
+}
+
+/* ── B9. SUBMIT BUTTON ─────────────────────────────────────── */
+.cyber-submit-btn {
+    display: block;
+    width: 100%;
+    margin-top: 24px;
+    padding: 14px;
+    background: transparent;
+    border: 2px solid var(--cyber-cyan);
+    color: var(--cyber-cyan);
+    font-family: var(--cyber-font-head);
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 3px;
+    border-radius: 4px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all var(--dur-mid);
+    text-shadow: 0 0 8px var(--cyber-cyan-glow);
+    box-shadow: 0 0 14px var(--cyber-cyan-glow), inset 0 0 14px rgba(0, 255, 247, 0.04);
+}
+
+.cyber-submit-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, transparent 30%, rgba(0, 255, 247, 0.08));
+    opacity: 0;
+    transition: opacity var(--dur-fast);
+}
+
+.cyber-submit-btn:hover::before {
+    opacity: 1;
+}
+
+.cyber-submit-btn:hover {
+    background: rgba(0, 255, 247, 0.08);
+    box-shadow: 0 0 28px var(--cyber-cyan-glow), inset 0 0 24px rgba(0, 255, 247, 0.06);
+}
+
+.cyber-submit-btn:active {
+    transform: translateY(1px);
+}
+
+.cyber-submit-btn.loading {
+    animation: pulseBtn 0.7s ease-in-out infinite;
+    cursor: wait;
+}
+
+@keyframes pulseBtn {
+
+    0%,
+    100% {
+        box-shadow: 0 0 14px var(--cyber-cyan-glow);
+    }
+
+    50% {
+        box-shadow: 0 0 40px var(--cyber-cyan-glow);
+    }
+}
+
+.btn-bracket {
+    color: var(--cyber-text-dim);
+}
+
+.btn-icon {
+    opacity: 0.6;
+}
+
+/* ── B10. X-RAY MOTHERBOARD DIAGRAM ───────────────────────── */
+.panel-right {
+    position: sticky;
+    top: 80px;
+    /* Stick near top after header */
+}
+
+.motherboard {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4/5;
+    background: #020d18;
+    border: 1px solid var(--cyber-cyan-dim);
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 0 20px rgba(0, 255, 247, 0.08), inset 0 0 40px rgba(0, 0, 0, 0.6);
+}
+
+/* PCB dot-grid background */
+.pcb-grid-bg {
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(circle, rgba(0, 255, 247, 0.15) 1px, transparent 1px);
+    background-size: 20px 20px;
+    pointer-events: none;
+}
+
+/* Circuit trace lines */
+.trace {
+    position: absolute;
+    background: rgba(0, 255, 247, 0.2);
+    z-index: 1;
+}
+
+.trace-h {
+    height: 1px;
+}
+
+.trace-v {
+    width: 1px;
+}
+
+/* ── Component blocks ────────────────────────────────────── */
+.mb-component {
+    position: absolute;
+    border: 1px solid var(--cyber-cyan-dim);
+    background: rgba(5, 20, 35, 0.85);
+    border-radius: 3px;
+    padding: 6px 8px;
+    z-index: 2;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    cursor: default;
+}
+
+.mb-component:hover {
+    border-color: var(--cyber-cyan);
+    box-shadow: 0 0 16px var(--cyber-cyan-glow);
+    z-index: 10;
+}
+
+/* Component labels */
+.comp-label {
+    font-family: var(--cyber-font-head);
+    font-size: 0.6rem;
+    color: var(--cyber-cyan);
+    letter-spacing: 2px;
+    text-shadow: 0 0 6px var(--cyber-cyan-glow);
+    margin-bottom: 2px;
+}
+
+.comp-detail {
+    font-size: 0.55rem;
+    color: var(--cyber-text-dim);
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+
+/* Status indicator dot on each component */
+.comp-status-dot {
+    position: absolute;
+    top: 5px;
+    right: 6px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--cyber-text-dim);
+    transition: background 0.3s, box-shadow 0.3s;
+}
+
+.dot-ok {
+    background: var(--cyber-green) !important;
+    box-shadow: 0 0 6px var(--cyber-green) !important;
+    animation: pulseDot 2s ease-in-out infinite;
+}
+
+.dot-fault {
+    background: var(--cyber-red) !important;
+    box-shadow: 0 0 8px var(--cyber-red) !important;
+    animation: blinkFault 0.5s step-end infinite;
+}
+
+@keyframes pulseDot {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@keyframes blinkFault {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+}
+
+/* Component FAULT state – red neon blink */
+.comp-fault {
+    border-color: var(--cyber-red) !important;
+    background: rgba(255, 51, 85, 0.1) !important;
+    box-shadow: 0 0 14px var(--cyber-red-glow), inset 0 0 10px rgba(255, 51, 85, 0.1) !important;
+    animation: faultPulse 0.6s ease-in-out infinite;
+}
+
+@keyframes faultPulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 10px var(--cyber-red-glow);
+    }
+
+    50% {
+        box-shadow: 0 0 28px rgba(255, 51, 85, 0.6);
+    }
+}
+
+.comp-fault .comp-label {
+    color: var(--cyber-red) !important;
+    text-shadow: 0 0 8px var(--cyber-red-glow) !important;
+}
+
+/* Component OK state */
+.comp-ok {
+    border-color: var(--cyber-green);
+    box-shadow: 0 0 8px rgba(0, 255, 136, 0.15);
+}
+
+.comp-ok .comp-label {
+    color: var(--cyber-green);
+}
+
+/* ── CPU Socket ──────────────────────────────────────────── */
+.cpu-socket {
+    top: 8%;
+    left: 8%;
+    width: 34%;
+    min-height: 90px;
+}
+
+.comp-pins {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3px;
+    margin-top: 4px;
+}
+
+.pin {
+    width: 6px;
+    height: 6px;
+    background: rgba(0, 255, 247, 0.3);
+    border-radius: 1px;
+    display: block;
+}
+
+/* ── RAM Slots ───────────────────────────────────────────── */
+.ram-area {
+    top: 8%;
+    right: 5%;
+    width: 22%;
+}
+
+.ram-slots {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.ram-slot {
+    border: 1px solid rgba(0, 255, 247, 0.25);
+    border-radius: 2px;
+    padding: 2px 4px;
+}
+
+.ram-module {
+    font-size: 0.5rem;
+    color: var(--cyber-text-dim);
+    letter-spacing: 1px;
+}
+
+/* ── VGA / PCIe Slot ─────────────────────────────────────── */
+.vga-slot {
+    top: 42%;
+    left: 5%;
+    width: 55%;
+}
+
+.pcie-teeth {
+    display: flex;
+    gap: 2px;
+    margin-top: 5px;
+    flex-wrap: wrap;
+}
+
+.tooth {
+    width: 5px;
+    height: 10px;
+    background: rgba(0, 255, 247, 0.2);
+    border-radius: 1px;
+    display: block;
+}
+
+/* ── HDD SATA Connectors ─────────────────────────────────── */
+.hdd-connector {
+    bottom: 14%;
+    left: 8%;
+    width: 38%;
+}
+
+.sata-ports {
+    display: flex;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.sata-port {
+    font-size: 0.5rem;
+    color: var(--cyber-text-dim);
+    border: 1px solid rgba(0, 255, 247, 0.2);
+    padding: 2px 5px;
+    border-radius: 2px;
+    letter-spacing: 0.5px;
+}
+
+/* ── PSU ATX Connector ───────────────────────────────────── */
+.psu-connector {
+    top: 30%;
+    right: 5%;
+    width: 20%;
+}
+
+.atx-pins {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2px;
+    margin-top: 5px;
+}
+
+.atx-pin {
+    width: 8px;
+    height: 8px;
+    background: rgba(0, 255, 247, 0.2);
+    border-radius: 1px;
+    display: block;
+}
+
+/* ── BIOS Chip ───────────────────────────────────────────── */
+.bios-chip {
+    bottom: 14%;
+    right: 8%;
+    width: 24%;
+    text-align: center;
+}
+
+.chip-icon {
+    font-size: 1.6rem;
+    color: rgba(0, 255, 247, 0.25);
+    margin-top: 4px;
+}
+
+/* ── MB Legend ───────────────────────────────────────────── */
+.mb-legend {
+    position: absolute;
+    bottom: 5%;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 14px;
+    font-size: 0.58rem;
+    color: var(--cyber-text-dim);
+    letter-spacing: 1px;
+    z-index: 3;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.legend-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.legend-dot.ok {
+    background: var(--cyber-green);
+    box-shadow: 0 0 4px var(--cyber-green);
+}
+
+.legend-dot.fault {
+    background: var(--cyber-red);
+    box-shadow: 0 0 4px var(--cyber-red);
+}
+
+/* ── Radar warning message ────────────────────────────────── */
+.mb-radar-msg {
+    position: absolute;
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--cyber-red);
+    color: #fff;
+    font-family: var(--cyber-font-head);
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    padding: 3px 12px;
+    border-radius: 2px;
+    z-index: 20;
+    animation: blinkRed 0.7s step-end infinite;
+}
+
+.diagram-hint {
+    margin-top: 10px;
+    font-size: 0.72rem;
+    color: var(--cyber-text-dim);
+    text-align: center;
+    letter-spacing: 0.5px;
+}
+
+.neon-red {
+    color: var(--cyber-red);
+    text-shadow: 0 0 6px var(--cyber-red-glow);
+}
+
+/* ── B11. FOOTER ────────────────────────────────────────────── */
+.cyber-footer {
+    border-top: 1px solid var(--cyber-border);
+    padding: 12px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    font-size: 0.65rem;
+    color: var(--cyber-text-dim);
+    letter-spacing: 1.5px;
+    background: rgba(5, 10, 16, 0.8);
+}
+
+.footer-sep {
+    color: var(--cyber-cyan);
+    opacity: 0.5;
+}
+
+.footer-admin-link {
+    color: var(--cyber-cyan-dim);
+    text-decoration: none;
+    transition: color var(--dur-fast);
+}
+
+.footer-admin-link:hover {
+    color: var(--cyber-cyan);
+}
+
+/* ================================================================
+   C.  RESULT.HTML  –  Shared with original Bootstrap styles
+================================================================ */
+
+/* Header card (result.html uses this) */
 .header-card {
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
     color: white;
@@ -17,116 +1178,14 @@ body {
     margin-bottom: 24px;
 }
 
-/* ── Nút chẩn đoán (index.html) ───────────────────────────── */
-.btn-diagnose {
-    background: linear-gradient(135deg, #0f3460, #e94560);
-    border: none;
-    color: white;
-    font-size: 1.1rem;
-    padding: 12px;
-    border-radius: 8px;
-    width: 100%;
-}
-.btn-diagnose:hover {
-    opacity: 0.9;
-    color: white;
-}
-
-/* ── Category cards (index.html) ──────────────────────────── */
-.category-card {
-    border: 1px solid #dee2e6;
-    border-radius: 10px;
-    margin-bottom: 16px;
-    overflow: hidden;
-}
-
-.category-header {
-    background: #0f3460;
-    color: white;
-    padding: 10px 16px;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    user-select: none;
-}
-.category-header:hover {
-    background: #1a4a7a;
-}
-
-.category-body {
-    padding: 14px 16px;
-    background: white;
-}
-
-.form-check-label {
-    cursor: pointer;
-}
-.form-check-input:checked + .form-check-label {
-    color: #0f3460;
-    font-weight: 500;
-}
-
-/* ── Beep section (index.html) ─────────────────────────────── */
-.beep-section {
-    background: white;
-    border: 1px solid #dee2e6;
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 24px;
-}
-
-.beep-mode-tabs .nav-link {
-    color: #0f3460;
-    border-radius: 6px;
-    font-size: 0.9rem;
-}
-.beep-mode-tabs .nav-link.active {
-    background: #0f3460;
-    color: white;
-}
-
-/* Beep preview nhỏ – chỉ hiện khi có class .show */
-#beep-preview {
-    display: none;
-    border-left: 4px solid #0f3460;
-    background: #f8f9fa;
-    border-radius: 6px;
-    padding: 12px 16px;
-    margin-top: 14px;
-    font-size: 0.88rem;
-}
-#beep-preview.show {
-    display: block;
-}
-
-/* ── Severity badges (index preview + result.html) ─────────── */
-.severity-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.75rem;
-    font-weight: 600;
-}
-.sev-normal   { background: #d1e7dd; color: #0a3622; }
-.sev-warning  { background: #fff3cd; color: #664d03; }
-.sev-error    { background: #f8d7da; color: #58151c; }
-.sev-critical { background: #842029; color: #fff;    }
-
-/* ── Severity card headers (result.html) ───────────────────── */
-.severity-normal   { background: #d1e7dd; color: #0a3622; }
-.severity-warning  { background: #fff3cd; color: #664d03; }
-.severity-error    { background: #f8d7da; color: #58151c; }
-.severity-critical { background: #842029; color: white;   }
-
-/* ── Result cards (result.html) ────────────────────────────── */
+/* Result cards */
 .result-card {
     border: none;
     border-radius: 10px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     margin-bottom: 16px;
 }
+
 .result-card .card-header {
     border-radius: 10px 10px 0 0;
     font-weight: 600;
@@ -170,7 +1229,10 @@ body {
     margin-top: 8px;
 }
 
-/* ── Admin page (admin.html) ────────────────────────────────── */
+/* ================================================================
+   D.  ADMIN.HTML  –  Preserved exactly
+================================================================ */
+
 .add-card {
     border: none;
     border-radius: 10px;
@@ -197,4 +1259,707 @@ body {
     border-radius: 4px;
     font-size: 0.85rem;
     margin-bottom: 16px;
+}
+
+/* ── Admin submit button ─────────────────────────────────────── */
+.btn-diagnose {
+    background: linear-gradient(135deg, #0f3460, #e94560);
+    border: none;
+    color: white;
+    font-size: 1.1rem;
+    padding: 12px;
+    border-radius: 8px;
+    width: 100%;
+}
+
+.btn-diagnose:hover {
+    opacity: 0.9;
+    color: white;
+}
+
+/* ── Category cards (kept for admin/result fallback) ─────────── */
+.category-card {
+    border: 1px solid #dee2e6;
+    border-radius: 10px;
+    margin-bottom: 16px;
+    overflow: hidden;
+}
+
+.category-header {
+    background: #0f3460;
+    color: white;
+    padding: 10px 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.category-header:hover {
+    background: #1a4a7a;
+}
+
+.category-body {
+    padding: 14px 16px;
+    background: white;
+}
+
+/* ================================================================
+   E.  SHARED SEVERITY BADGES
+================================================================ */
+.severity-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.sev-normal {
+    background: #d1e7dd;
+    color: #0a3622;
+}
+
+.sev-warning {
+    background: #fff3cd;
+    color: #664d03;
+}
+
+.sev-error {
+    background: #f8d7da;
+    color: #58151c;
+}
+
+.sev-critical {
+    background: #842029;
+    color: #fff;
+}
+
+/* Severity card headers (result.html) */
+.severity-normal {
+    background: #d1e7dd;
+    color: #0a3622;
+}
+
+.severity-warning {
+    background: #fff3cd;
+    color: #664d03;
+}
+
+.severity-error {
+    background: #f8d7da;
+    color: #58151c;
+}
+
+.severity-critical {
+    background: #842029;
+    color: white;
+}
+
+/* Beep preview shared */
+#beep-preview {
+    display: none;
+    border-left: 4px solid #0f3460;
+    background: #f8f9fa;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-top: 14px;
+    font-size: 0.88rem;
+}
+
+#beep-preview.show {
+    display: block;
+}
+
+/* ────────────────────────────────────────────────────────────────
+   F. CYBERPUNK RESULT PAGE SPECIALS
+   ──────────────────────────────────────────────────────────────── */
+.result-summary-box {
+    background: rgba(0, 255, 247, 0.05);
+    border: 1px solid var(--cyber-border);
+    padding: 12px 16px;
+    border-radius: 4px;
+}
+
+.summary-label {
+    font-size: 0.65rem;
+    color: var(--cyber-text-dim);
+    letter-spacing: 1px;
+    display: block;
+    margin-bottom: 6px;
+}
+
+.cyber-badge-sm {
+    display: inline-block;
+    background: rgba(0, 255, 247, 0.1);
+    color: var(--cyber-cyan);
+    font-size: 0.7rem;
+    padding: 2px 8px;
+    border-radius: 2px;
+    border: 1px solid var(--cyber-cyan-dim);
+    margin: 2px;
+}
+
+.panel-sub-label {
+    font-family: var(--cyber-font-head);
+    font-size: 0.75rem;
+    color: var(--cyber-cyan);
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    padding-left: 8px;
+    border-left: 3px solid var(--cyber-green);
+}
+
+.cyber-result-card {
+    background: var(--cyber-bg2);
+    border: 1px solid var(--cyber-border);
+    border-radius: 4px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    transition: transform 0.2s;
+}
+
+.cyber-result-card:hover {
+    border-color: var(--cyber-cyan-dim);
+}
+
+.result-card-header {
+    background: rgba(13, 33, 55, 0.8);
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--cyber-border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.r-icon {
+    color: var(--cyber-yellow);
+}
+
+.r-conclusion {
+    font-weight: 700;
+    color: var(--cyber-cyan);
+    font-family: var(--cyber-font-head);
+    font-size: 0.85rem;
+}
+
+.result-card-body {
+    padding: 14px;
+}
+
+.r-detail {
+    margin-bottom: 12px;
+}
+
+.d-label {
+    display: block;
+    font-size: 0.65rem;
+    color: var(--cyber-text-dim);
+    margin-bottom: 6px;
+}
+
+.fact-tag {
+    display: inline-block;
+    background: #0d2137;
+    color: #8fb9cc;
+    font-size: 0.72rem;
+    padding: 2px 10px;
+    border-radius: 12px;
+    margin: 2px;
+}
+
+.r-solution-box {
+    background: rgba(0, 255, 136, 0.04);
+    border-left: 3px solid var(--cyber-green);
+    padding: 10px 14px;
+    border-radius: 4px;
+}
+
+.s-header {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--cyber-green);
+    margin-bottom: 4px;
+}
+
+.s-content {
+    font-size: 0.82rem;
+    color: var(--cyber-text);
+    white-space: pre-line;
+}
+
+.cyber-badge-sev {
+    font-size: 0.6rem;
+    padding: 1px 6px;
+    border-radius: 2px;
+}
+
+.cyber-badge-sev.normal {
+    background: var(--cyber-green);
+    color: #000;
+}
+
+.cyber-badge-sev.warning {
+    background: var(--cyber-yellow);
+    color: #000;
+}
+
+.cyber-badge-sev.error {
+    background: var(--cyber-red);
+    color: #fff;
+}
+
+.cyber-badge-sev.critical {
+    background: var(--cyber-red);
+    color: #fff;
+    animation: blinkRed 0.5s step-end infinite;
+}
+
+.bios-ref-tag {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 0.65rem;
+    color: var(--cyber-cyan-dim);
+    background: rgba(0, 255, 247, 0.05);
+    padding: 2px 8px;
+    border-radius: 3px;
+}
+
+.cyber-no-results {
+    padding: 30px;
+    text-align: center;
+    background: rgba(255, 51, 85, 0.03);
+    border: 1px dashed var(--cyber-border);
+    border-radius: 4px;
+}
+
+.no-res-icon {
+    font-size: 2rem;
+    color: var(--cyber-text-dim);
+    margin-bottom: 10px;
+}
+
+.no-res-msg {
+    font-size: 0.8rem;
+    color: var(--cyber-text-dim);
+    letter-spacing: 1px;
+}
+
+.cyber-btn-outline {
+    display: inline-block;
+    padding: 10px 24px;
+    border: 1px solid var(--cyber-cyan-dim);
+    color: var(--cyber-cyan);
+    text-decoration: none;
+    font-family: var(--cyber-font-head);
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    transition: all 0.2s;
+    border-radius: 4px;
+}
+
+.cyber-btn-outline:hover {
+    background: var(--cyber-cyan);
+    color: var(--cyber-bg);
+    box-shadow: 0 0 15px var(--cyber-cyan-glow);
+}
+
+.radar-status-text {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 10px;
+    font-size: 0.75rem;
+    border-radius: 4px;
+    border-left: 3px solid var(--cyber-cyan);
+}
+
+/* ────────────────────────────────────────────────────────────────
+   G. ADMIN PAGE — CYBERPUNK KNOWLEDGE BASE EDITOR
+   ──────────────────────────────────────────────────────────────── */
+
+/* ── Flash alert ── */
+.admin-alert {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    font-size: 0.82rem;
+    border-left: 4px solid;
+}
+
+.admin-alert-success {
+    background: rgba(0, 255, 136, 0.06);
+    border-color: var(--cyber-green);
+    color: var(--cyber-green);
+}
+
+.admin-alert-error,
+.admin-alert-danger {
+    background: rgba(255, 51, 85, 0.06);
+    border-color: var(--cyber-red);
+    color: var(--cyber-red);
+}
+
+.aa-icon {
+    font-size: 1.1rem;
+}
+
+.aa-text {
+    flex: 1;
+}
+
+.aa-close {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    font-size: 1rem;
+    opacity: 0.6;
+    transition: opacity 0.15s;
+}
+
+.aa-close:hover {
+    opacity: 1;
+}
+
+/* ── Panel container ── */
+.admin-panel {
+    background: var(--cyber-bg2);
+    border: 1px solid var(--cyber-border);
+    border-radius: 6px;
+    margin-bottom: 24px;
+    overflow: hidden;
+}
+
+.admin-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 18px;
+    background: rgba(13, 33, 55, 0.9);
+    border-bottom: 1px solid var(--cyber-border);
+}
+
+.inject-panel .admin-panel-header {
+    border-left: 4px solid var(--cyber-yellow);
+}
+
+.database-panel .admin-panel-header {
+    border-left: 4px solid var(--cyber-cyan);
+}
+
+.ap-icon {
+    font-size: 1.1rem;
+}
+
+.ap-title {
+    font-family: var(--cyber-font-head);
+    font-size: 0.78rem;
+    color: var(--cyber-cyan);
+    letter-spacing: 1.5px;
+    flex: 1;
+}
+
+.ap-badge {
+    font-size: 0.6rem;
+    padding: 2px 8px;
+    border-radius: 2px;
+    letter-spacing: 1px;
+    font-family: var(--cyber-font-mono);
+}
+
+.ap-badge-warn {
+    background: rgba(255, 224, 102, 0.12);
+    color: var(--cyber-yellow);
+    border: 1px solid var(--cyber-yellow);
+}
+
+.ap-badge-cyan {
+    background: rgba(0, 255, 247, 0.08);
+    color: var(--cyber-cyan);
+    border: 1px solid var(--cyber-cyan-dim);
+}
+
+.admin-panel-body {
+    padding: 20px 18px;
+}
+
+/* ── Hint block ── */
+.admin-hint-block {
+    background: rgba(0, 255, 247, 0.04);
+    border: 1px solid var(--cyber-border);
+    border-left: 3px solid var(--cyber-cyan-dim);
+    padding: 10px 14px;
+    font-size: 0.78rem;
+    color: var(--cyber-text-dim);
+    border-radius: 4px;
+    margin-bottom: 18px;
+    line-height: 1.7;
+}
+
+.hint-prefix {
+    color: var(--cyber-cyan-dim);
+    font-family: var(--cyber-font-head);
+    font-size: 0.68rem;
+    margin-right: 4px;
+}
+
+.cyber-code {
+    background: rgba(0, 255, 247, 0.1);
+    color: var(--cyber-cyan);
+    padding: 1px 6px;
+    border-radius: 2px;
+    font-family: var(--cyber-font-mono);
+    font-size: 0.82em;
+}
+
+/* ── Form ── */
+.admin-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+    margin-bottom: 18px;
+}
+
+.admin-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.field-hint {
+    font-size: 0.65rem;
+    color: var(--cyber-text-dim);
+    font-family: var(--cyber-font-mono);
+}
+
+.cyber-label {
+    font-family: var(--cyber-font-head);
+    font-weight: 600;
+    font-size: 0.72rem;
+    color: var(--cyber-cyan);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.cyber-input {
+    background: rgba(5, 10, 16, 0.8);
+    border: 1px solid var(--cyber-border);
+    color: var(--cyber-text);
+    font-family: var(--cyber-font-mono);
+    font-size: 0.82rem;
+    padding: 9px 12px;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%;
+}
+
+.cyber-input:focus {
+    border-color: var(--cyber-cyan-dim);
+    box-shadow: 0 0 10px var(--cyber-cyan-glow);
+}
+
+.cyber-input::placeholder {
+    color: var(--cyber-text-dim);
+}
+
+/* ── INJECT button (yellow/warning) ── */
+.cyber-btn-inject {
+    background: transparent;
+    border: 1px solid var(--cyber-yellow);
+    color: var(--cyber-yellow);
+    font-family: var(--cyber-font-head);
+    font-weight: 600;
+    font-size: 0.82rem;
+    padding: 11px 28px;
+    letter-spacing: 1.5px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s, color 0.2s;
+}
+
+.cyber-btn-inject:hover {
+    background: var(--cyber-yellow);
+    color: var(--cyber-bg);
+    box-shadow: 0 0 18px rgba(255, 224, 102, 0.4);
+}
+
+.cyber-btn-inject .btn-bracket {
+    color: var(--cyber-yellow);
+    opacity: 0.5;
+}
+
+/* ── Cyber table ── */
+.cyber-table-wrapper {
+    overflow-x: auto;
+}
+
+.cyber-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--cyber-font-mono);
+    font-size: 0.8rem;
+}
+
+.cyber-table thead tr {
+    background: rgba(0, 0, 0, 0.6);
+    border-bottom: 2px solid var(--cyber-cyan-dim);
+}
+
+.cyber-table th {
+    padding: 12px 14px;
+    text-align: left;
+    font-family: var(--cyber-font-head);
+    font-size: 0.65rem;
+    letter-spacing: 1.5px;
+    color: var(--cyber-cyan);
+    white-space: nowrap;
+}
+
+.cyber-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--cyber-border);
+    vertical-align: middle;
+    color: var(--cyber-text);
+}
+
+/* Matrix glow on row hover */
+.rule-row {
+    transition: background 0.15s, box-shadow 0.15s;
+    position: relative;
+}
+
+.rule-row:hover {
+    background: rgba(0, 255, 136, 0.05);
+    box-shadow: inset 0 0 20px rgba(0, 255, 136, 0.06);
+}
+
+.rule-row:hover .cell-id {
+    color: var(--cyber-green);
+    text-shadow: 0 0 8px var(--cyber-green);
+}
+
+.rule-row:hover .cell-conclusion .conclusion-badge {
+    border-color: var(--cyber-green);
+    color: var(--cyber-green);
+}
+
+.cell-id {
+    font-family: var(--cyber-font-head);
+    font-size: 0.72rem;
+    color: var(--cyber-text-dim);
+    transition: color 0.15s, text-shadow 0.15s;
+}
+
+.cond-tag {
+    display: inline-block;
+    background: rgba(0, 191, 184, 0.1);
+    color: var(--cyber-cyan-dim);
+    border: 1px solid rgba(0, 191, 184, 0.3);
+    padding: 1px 8px;
+    border-radius: 2px;
+    font-size: 0.72rem;
+    margin: 2px 2px 2px 0;
+}
+
+.conclusion-badge {
+    display: inline-block;
+    background: rgba(0, 255, 247, 0.06);
+    color: var(--cyber-cyan);
+    border: 1px solid var(--cyber-border);
+    padding: 2px 10px;
+    border-radius: 2px;
+    font-size: 0.72rem;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.cell-solution {
+    color: #8099aa;
+    font-size: 0.78rem;
+}
+
+/* ── PURGE button ── */
+@keyframes purgeBlink {
+
+    0%,
+    100% {
+        border-color: var(--cyber-red);
+        color: var(--cyber-red);
+    }
+
+    50% {
+        border-color: rgba(255, 51, 85, 0.35);
+        color: rgba(255, 51, 85, 0.4);
+    }
+}
+
+.btn-purge {
+    background: transparent;
+    border: 1px solid var(--cyber-red);
+    color: var(--cyber-red);
+    font-family: var(--cyber-font-head);
+    font-size: 0.6rem;
+    padding: 5px 10px;
+    letter-spacing: 1px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+    white-space: nowrap;
+}
+
+.btn-purge:hover {
+    background: var(--cyber-red);
+    color: #000;
+    box-shadow: 0 0 14px var(--cyber-red-glow);
+    animation: none;
+}
+
+.rule-row:not(:hover) .btn-purge {
+    animation: purgeBlink 1.4s step-end infinite;
+}
+
+/* ────────────────────────────────────────────────────────────────
+   H. EFFECTS — LASER SCAN ANIMATION
+   ──────────────────────────────────────────────────────────────── */
+.laser-scan-line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--cyber-cyan);
+    box-shadow: 0 0 15px var(--cyber-cyan), 0 0 30px var(--cyber-cyan), 0 0 45px var(--cyber-cyan-dim);
+    display: none;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0.8;
+}
+
+.laser-scan-line.scanning {
+    display: block;
+    animation: laserScan 1.5s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+}
+
+@keyframes laserScan {
+    0% {
+        top: 0;
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        top: 100%;
+        opacity: 0;
+    }
 }
