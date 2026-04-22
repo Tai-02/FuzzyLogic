@@ -45,40 +45,52 @@ FuzzyLogic/
 
 ---
 
-## 🚀 Khởi chạy hệ thống nghiệm thu (Quick Start)
+## ⚙️ Trạm Quản Trị & Bảo Mật (Admin & Security)
 
-Dự án này đã được đóng gói toàn diện bằng Docker để đơn giản hóa quá trình chạy đồ án. Tránh xung đột môi trường Python 100%.
-
-### Cách 1: Khởi động siêu tốc bằng Docker (Khuyên dùng 🌟)
-*Yêu cầu môi trường đã cài đặt Docker Desktop.*
-
-1. Mở Terminal / PowerShell tại thư mục đồ án:
-   ```bash
-   cd "d:\source code\FuzzyLogic"
-   ```
-2. Kéo hệ thống Online bằng lệnh cơ bản:
-   ```bash
-   docker-compose up -d --build
-   ```
-3. Sau 30s hệ cơ sở dữ liệu khởi tạo xong, truy cập bằng trình duyệt web:
-   👉 **http://localhost:5000**
-
-*Lưu ý: Bạn có thể sửa trực tiếp HTML/CSS, Web sẽ tự nhận lệnh mà không cần tắt Docker.*
-
-### Cách 2: Khởi chạy môi trường thuần (Manual)
-*Yêu cầu: Đã cài Local MySQL server và Python 3.8+*
-
-1. Đổ dữ liệu file `data.sql` vào MySQL Database (Tên DB: `expert_system`).
-2. Sửa Pass DB nội bộ tại 4 biến môi trường đầu chuỗi nằm ở đoạn `app.py`.
-3. Tải các package liên kết: `pip install flask mysql-connector-python`
-4. Lên sóng máy chủ: `python app.py`
+Hệ thống đã được tích hợp lớp bảo mật để bảo vệ cơ sở dữ liệu tri thức.
+- **Đường dẫn truy cập:** `http://localhost:5000/admin`
+- **Tài khoản mặc định:**
+  - **Username:** `admin`
+  - **Password:** `admin123`
+- **Cơ chế:** Mật khẩu được mã hóa chuẩn `scrypt` trong cơ sở dữ liệu để đảm bảo an toàn.
 
 ---
 
-## 🧰 Kịch bản sử dụng (Operation Protocol)
+## 🚀 Khởi chạy & Thiết lập (Installation)
 
-- **Trạm chẩn đoán (`/`):** Bật các nút gạt chẩn đoán (Toggles), chọn tín hiệu âm thanh thu được, bấm lệnh `[ KHỞI ĐỘNG CHẨN ĐOÁN ]` và xem Radar tia Laser quét X-Ray hoạt động.
-- **Trạm nạp lượng tử (`/admin`):** Thêm các dòng "Điều Kiện", "Kết Luận" ngăn cách nhau qua dấu phẩy (,) rồi nạp vào Database.
+### 🐳 Cách 1: Sử dụng Docker (Khuyên dùng)
+1. **Khởi động:**
+   ```powershell
+   docker-compose up -d --build
+   ```
+2. **Cập nhật Database (Nếu đã chạy Docker trước đó):**
+   Nếu bạn sửa file `data.sql` và muốn nạp lại vào Docker mà không mất dữ liệu hiện có, hãy chạy lệnh sau trong PowerShell:
+   ```powershell
+   Get-Content data.sql | docker exec -i fuzzy_db mysql -u root -proot_password expert_system
+   ```
+
+### 🐍 Cách 2: Chạy thủ công (Manual)
+1. Cài đặt thư viện: `pip install flask mysql-connector-python werkzeug`
+2. Tạo database `expert_system` trong MySQL.
+3. Import file `data.sql`.
+4. Chạy: `python app.py`
+
+---
+
+## 🧰 Kịch bản vận hành (Operation Protocol)
+
+### 1. Chẩn đoán lỗi (User Terminal)
+- Truy cập trang chủ, chọn các triệu chứng hệ thống đang gặp phải.
+- Nếu có tiếng bíp, chọn loại tiếng bíp tương ứng để AI Logic Mờ phân tích mức độ nghiêm trọng.
+- Nhấn **KHỞI ĐỘNG CHẨN ĐOÁN** để xem kết quả và sơ đồ X-Ray.
+
+### 2. Quản lý tri thức (Knowledge Base)
+- Đăng nhập vào `/admin`.
+- **Thêm luật mới:** 
+  - **Điều kiện:** Nhập các triệu chứng cách nhau bằng dấu phẩy (Ví dụ: `CPU, Nóng, Quạt không quay`).
+  - **Kết luận:** Tên lỗi (Ví dụ: `Lỗi quá nhiệt CPU`).
+  - **Giải pháp:** Hướng dẫn sửa chữa cho người dùng.
+- **Xóa luật:** Sử dụng danh sách bảng điều khiển để gỡ bỏ các luật lỗi thời.
 
 ---
 *> // PHẦN MỀM THUỘC SỞ HỮU TRÍ TUỆ ĐỒ ÁN MÔN HỌC HỆ CHUYÊN GIA — CÔNG NGHỆ FLASK & FUZZY AI //*

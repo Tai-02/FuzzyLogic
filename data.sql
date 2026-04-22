@@ -2,6 +2,31 @@ CREATE DATABASE IF NOT EXISTS expert_system;
 
 USE expert_system;
 
+-- =============================================
+-- Bảng: admins (Tài khoản quản trị)
+-- Password được hash bằng werkzeug.security
+-- Tài khoản mặc định: admin / admin123
+-- =============================================
+DROP TABLE IF EXISTS admins;
+ 
+CREATE TABLE admins (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password_hash TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+ 
+-- Tài khoản mặc định: admin / admin123
+-- (hash bằng werkzeug generate_password_hash)
+INSERT INTO admins (username, password_hash) VALUES (
+    'admin',
+    'scrypt:32768:8:1$kjWX2eCGiBuhADGW$a5cac878fa193b70a7077e4b8b99a2bc38136da37336359a84f784cfd614931ee04536c629323ce4c3579423d01879fa8613589c7a2cac7086b44fdd83d1e7d3'
+);
+
+
+-- =============================================
+-- Bảng: rules (Cơ sở luật chẩn đoán)
+-- =============================================
 DROP TABLE IF EXISTS rules;
 
 CREATE TABLE rules (

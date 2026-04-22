@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Expert PC Troubleshooter // QUẢN TRỊ VIÊN</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Chakra+Petch:wght@400;600;700&family=Be+Vietnam+Pro:wght@400;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Chakra+Petch:wght@400;600;700&family=Be+Vietnam+Pro:wght@400;600;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body class="cyber-body">
 
     <div class="scanline-overlay" aria-hidden="true"></div>
@@ -25,6 +29,9 @@
                 <span class="status-text">QUYỀN TRUY CẬP CAO NHẤT</span>
                 <span class="status-sep">|</span>
                 <a href="/" class="cyber-admin-link">◂ TRANG CHẨN ĐOÁN</a>
+                <span class="status-sep">|</span>
+                <a href="/admin/logout" class="cyber-admin-link" style="color:#ff4444;"
+                    onclick="return confirm('Đăng xuất khỏi trang quản trị?')">⏻ ĐĂNG XUẤT</a>
             </div>
         </div>
     </header>
@@ -32,13 +39,15 @@
     <main class="cyber-main" style="max-width: 1100px; margin: 0 auto; padding: 28px 16px;">
 
         <!-- FLASH MESSAGE -->
-        {% if message %}
-        <div class="admin-alert admin-alert-{{ message.type }}">
-            <span class="aa-icon">{% if message.type == 'success' %}✔{% else %}✖{% endif %}</span>
-            <span class="aa-text">{{ message.text }}</span>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, msg in messages %}
+        <div class="admin-alert admin-alert-{{ category }}">
+            <span class="aa-icon">{% if category == 'success' %}✔{% else %}✖{% endif %}</span>
+            <span class="aa-text">{{ msg }}</span>
             <button class="aa-close" onclick="this.parentElement.style.display='none'">✕</button>
         </div>
-        {% endif %}
+        {% endfor %}
+        {% endwith %}
 
         <!-- SECTION 1: ADD RULE -->
         <div class="admin-panel inject-panel">
@@ -62,16 +71,19 @@
                     <div class="admin-form-grid">
                         <div class="admin-field">
                             <label class="cyber-label">[+] CẤU HÌNH ĐIỀU KIỆN (Conditions)</label>
-                            <input name="conditions" class="cyber-input" placeholder="e.g.: Audio, No Sound Output" required>
+                            <input name="conditions" class="cyber-input" placeholder="e.g.: Audio, No Sound Output"
+                                required>
                             <span class="field-hint">// Phân cách bằng dấu phẩy</span>
                         </div>
                         <div class="admin-field">
                             <label class="cyber-label">[+] CẤU HÌNH KẾT LUẬN (Conclusion)</label>
-                            <input name="conclusion" class="cyber-input" placeholder="e.g.: Sound Card Damaged" required>
+                            <input name="conclusion" class="cyber-input" placeholder="e.g.: Sound Card Damaged"
+                                required>
                         </div>
                         <div class="admin-field">
                             <label class="cyber-label">[+] CẤU HÌNH HƯỚNG KHẮC PHỤC (Solution)</label>
-                            <input name="solution" class="cyber-input" placeholder="e.g.: Replace or reinstall sound card" required>
+                            <input name="solution" class="cyber-input"
+                                placeholder="e.g.: Replace or reinstall sound card" required>
                         </div>
                     </div>
                     <button type="submit" class="cyber-btn-inject">
@@ -117,7 +129,8 @@
                                 </td>
                                 <td class="cell-solution">{{ r.solution }}</td>
                                 <td class="cell-action">
-                                    <form method="post" onsubmit="return confirm('⚠ XÓA BỎ CHỈ THỊ #{{ r.id }}? THAO TÁC NÀY KHÔNG THỂ KHÔI PHỤC.')">
+                                    <form method="post"
+                                        onsubmit="return confirm('⚠ XÓA BỎ CHỈ THỊ #{{ r.id }}? THAO TÁC NÀY KHÔNG THỂ KHÔI PHỤC.')">
                                         <input type="hidden" name="action" value="delete">
                                         <input type="hidden" name="rule_id" value="{{ r.id }}">
                                         <button type="submit" class="btn-purge">[ XÓA BỎ ]</button>
@@ -142,4 +155,5 @@
     </footer>
 
 </body>
+
 </html>
