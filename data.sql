@@ -113,3 +113,40 @@ INSERT INTO rules (conditions, conclusion, solution) VALUES
 ('Startup, System Beeps Several Times', 'Fatal Hardware Errors', 'Check for Any Defective Hardware'),
 ('Startup, System Can\'t Find any Hard Drive', 'Boot Priority Errors', 'Set Hard Drive as the 1st Booting Device'),
 ('Startup, Computer won\'t Start After Installing Card', 'Conflict or Defective Hardware', 'Remove all Connected Cards and Try Again');
+
+-- =============================================
+-- LUẬT CHUỖI (CHAIN RULES)
+-- Sử dụng kết luận của các luật trước làm điều kiện
+-- để Forward Chaining chạy nhiều vòng (multi-pass)
+-- =============================================
+
+-- Chain 1: Lỗi nguồn điện nghiêm trọng
+-- Nếu vừa phát hiện PSU voltage lỗi + PSU quá tải → Critical PSU Failure
+INSERT INTO rules (conditions, conclusion, solution) VALUES
+('Power Good Voltage Level out of Limits, Defective or Overloaded Power Supply',
+ 'Critical PSU Failure — Immediate Replacement Required',
+ 'Multiple PSU failure indicators detected simultaneously.\n1) Disconnect all power cables immediately.\n2) Test PSU with multimeter — check +3.3V, +5V, +12V rails.\n3) Replace PSU with unit rated 300W or higher.\n4) After replacing, run burn-in test for 24 hours to verify stability.');
+
+-- Chain 2: Lỗi hiển thị + phần cứng nghiêm trọng → mainboard
+INSERT INTO rules (conditions, conclusion, solution) VALUES
+('Video Card Problem, Fatal Hardware Errors',
+ 'Mainboard-Level Display Subsystem Failure',
+ 'Both video and fatal hardware errors indicate mainboard-level failure.\n1) Remove all expansion cards.\n2) Test with integrated graphics if available.\n3) Try a known-good video card in another PCIe slot.\n4) If all fail, the PCIe slot or mainboard chipset is likely damaged — consider mainboard replacement.');
+
+-- Chain 3: BIOS lỗi thời + Ổ cứng không khởi tạo được
+INSERT INTO rules (conditions, conclusion, solution) VALUES
+('BIOS is Out-of-Date, Drive has not Been Partitioned',
+ 'Storage Subsystem Initialization Failure',
+ 'Both BIOS and drive partition issues detected.\n1) Update BIOS firmware first.\n2) After BIOS update, run FDISK to create partitions.\n3) Format the drive.\n4) If drive still not recognized, check SATA cable and port.');
+
+-- Chain 4: BIOS lỗi + mật khẩu khóa → Deadlock
+INSERT INTO rules (conditions, conclusion, solution) VALUES
+('BIOS is out-of-date, BIOS is Password Protected',
+ 'BIOS Access and Update Deadlock',
+ 'Cannot update BIOS because it is password-protected.\n1) Clear CMOS by removing battery for 30 seconds.\n2) Use motherboard jumper to reset BIOS password.\n3) After reset, immediately update BIOS firmware.\n4) Set a new documented password after update.');
+
+-- Chain 5: PSU hỏng + Card xung đột → Toàn hệ thống
+INSERT INTO rules (conditions, conclusion, solution) VALUES
+('Defective Power Supply, Conflict or Defective Hardware',
+ 'System-Wide Power and Hardware Conflict',
+ 'Power supply failure combined with hardware conflict indicates cascading system failure.\n1) Replace PSU first.\n2) Remove all non-essential cards and peripherals.\n3) Boot with minimal configuration (CPU + 1 RAM stick + onboard video).\n4) Add components one by one to isolate the conflict.');

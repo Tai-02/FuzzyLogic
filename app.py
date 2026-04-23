@@ -4,7 +4,7 @@ import mysql.connector
 import os
 from functools import wraps
 
-from fuzzy import fuzzy_beep
+from fuzzy import fuzzy_beep_from_crisp, fuzzy_beep_from_count
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "expert-sys-secret-2025")
@@ -73,18 +73,35 @@ def index():
 
     if request.method == "POST":
         selected_symptoms = request.form.getlist("symptoms")
-        beep_type = request.form.get("beep", "").strip()
+        beep_mode = request.form.get("beep_mode", "").strip()
         rule_results = forward_chaining(selected_symptoms)
-        if beep_type:
-            beep_result = fuzzy_beep(beep_type)
-        else:
+
+        beep_result = None
+        if beep_mode == "duration":
+            raw = request.form.get("beep_duration", "").strip()
+            if raw:
+                beep_result = fuzzy_beep_from_crisp(float(raw))
+        elif beep_mode == "count":
+            raw = request.form.get("beep_count", "").strip()
+            count_map = {
+                "1 beep": 1, "2 beeps": 2, "3 beeps": 3, "4 beeps": 4,
+                "5 beeps": 5, "6 beeps": 6, "7 beeps": 7, "8 beeps": 8,
+                "9+ beeps": 10,
+            }
+            if raw and raw in count_map:
+                beep_result = fuzzy_beep_from_count(count_map[raw])
+
+        if not beep_result:
             beep_result = {
                 "linguistic_label": "",
                 "diagnosis": "Không có tiếng beep được chọn",
                 "solution": "",
                 "severity": "normal",
                 "bios_ref": "",
+                "memberships": {},
+                "crisp_input": None,
             }
+
         return render_template("result.html", results=rule_results, beep=beep_result, selected_symptoms=selected_symptoms)
 
     cursor.execute("SELECT conditions FROM rules")

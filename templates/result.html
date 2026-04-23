@@ -84,10 +84,78 @@
                 {% endif %}
 
                 <!-- ENGINE 02: FUZZY BEEP -->
-                <div class="panel-sub-label mt-4">▸ CỘT CƠ SỞ 02: PHÂN TÍCH ÂM THANH FUZZY</div>
+                <div class="panel-sub-label mt-4">▸ CỘT CƠ SỞ 02: PHÂN TÍCH ÂM THANH FUZZY (FUZZIFICATION)</div>
 
                 {% if beep and beep.linguistic_label %}
                     {% set sev = beep.severity %}
+
+                    <!-- BẢNG FUZZIFICATION — ĐỘ THUỘC TẬP MỜ -->
+                    {% if beep.memberships %}
+                    <div class="cyber-result-card" style="border-color: var(--cyber-cyan-dim); margin-bottom: 16px;">
+                        <div class="result-card-header" style="border-bottom-color: var(--cyber-cyan-dim);">
+                            <span class="r-icon">📊</span>
+                            <span class="r-conclusion">FUZZIFICATION — BẢNG ĐỘ THUỘC TẬP MỜ (μ)</span>
+                        </div>
+                        <div class="result-card-body">
+                            {% if beep.crisp_input is not none %}
+                            <div class="r-detail" style="margin-bottom: 14px;">
+                                <span class="d-label">GIÁ TRỊ ĐẦU VÀO (CRISP INPUT):</span>
+                                <span class="d-content highlight" style="font-size: 1.1rem;">{{ beep.crisp_input }}</span>
+                            </div>
+                            {% endif %}
+                            <style>
+                                .fuzzy-table { width: 100%; border-collapse: collapse; font-family: var(--cyber-font-mono); }
+                                .fuzzy-th-1 { text-align: left; padding: 8px 10px; color: var(--cyber-cyan-dim); font-size: 0.7rem; letter-spacing: 2px; }
+                                .fuzzy-th-2 { text-align: right; padding: 8px 10px; color: var(--cyber-cyan-dim); font-size: 0.7rem; letter-spacing: 2px; width: 80px; }
+                                .fuzzy-th-3 { padding: 8px 10px; color: var(--cyber-cyan-dim); font-size: 0.7rem; letter-spacing: 2px; }
+                                .fuzzy-row { border-bottom: 1px solid rgba(13,33,55,0.6); }
+                                .fuzzy-row.winner { background: rgba(0,255,136,0.08); }
+                                .fuzzy-td-1 { padding: 7px 10px; font-size: 0.82rem; color: var(--cyber-text-dim); }
+                                .fuzzy-td-1.winner { color: var(--cyber-green); font-weight: 700; }
+                                .fuzzy-td-2 { padding: 7px 10px; text-align: right; font-size: 0.85rem; color: var(--cyber-text); }
+                                .fuzzy-td-2.winner { color: var(--cyber-green); text-shadow: 0 0 8px rgba(0,255,136,0.5); }
+                                .fuzzy-td-3 { padding: 7px 10px; }
+                                .fuzzy-bar-wrap { background: rgba(0,0,0,0.4); border: 1px solid var(--cyber-border); border-radius: 2px; height: 16px; position: relative; overflow: hidden; }
+                                .fuzzy-bar-fill { height: 100%; transition: width 0.3s; background: var(--cyber-cyan-dim); }
+                                .fuzzy-bar-fill.winner { background: var(--cyber-green); box-shadow: 0 0 10px rgba(0,255,136,0.5); }
+                            </style>
+                            <table class="fuzzy-table">
+                                <thead>
+                                    <tr style="border-bottom: 1px solid var(--cyber-border);">
+                                        <th class="fuzzy-th-1">TẬP MỜ</th>
+                                        <th class="fuzzy-th-2">μ</th>
+                                        <th class="fuzzy-th-3">BIỂU ĐỒ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for label, mu in beep.memberships.items() %}
+                                    {% set is_winner = (label == beep.linguistic_label) %}
+                                    <tr class="fuzzy-row {% if is_winner %}winner{% endif %}">
+                                        <td class="fuzzy-td-1 {% if is_winner %}winner{% endif %}">
+                                            {{ label }}{% if is_winner %} ◀ MAX{% endif %}
+                                        </td>
+                                        <td class="fuzzy-td-2 {% if is_winner %}winner{% endif %}">
+                                            {{ "%.4f"|format(mu) }}
+                                        </td>
+                                        <td class="fuzzy-td-3">
+                                            <div class="fuzzy-bar-wrap">
+                                                {% set bar_style = 'style="width:' ~ ((mu * 100)|round(1)) ~ '%;"' %}
+                                                <div class="fuzzy-bar-fill {% if is_winner %}winner{% endif %}" {{ bar_style | safe }}></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <div style="margin-top:14px; padding:10px 14px; background:rgba(0,255,136,0.06); border:1px solid var(--cyber-green-dim, #00cc6a); border-radius:3px; font-size:0.8rem;">
+                                <span style="color:var(--cyber-green); font-weight:700;">DEFUZZIFICATION (MAX):</span>
+                                <span style="color:var(--cyber-text);"> Tập mờ "<strong style="color:var(--cyber-green);">{{ beep.linguistic_label }}</strong>" được chọn (μ cao nhất)</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- KẾT QUẢ CHẨN ĐOÁN FUZZY -->
                     <div class="cyber-result-card beep-result sev-{{ sev }}" data-diagnosis="{{ beep.diagnosis }}">
                         <div class="result-card-header">
                             <span class="r-icon">🔔</span>

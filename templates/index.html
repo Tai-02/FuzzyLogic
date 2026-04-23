@@ -84,6 +84,7 @@
                     </div>
 
                     <div class="beep-panel">
+                        <input type="hidden" name="beep_mode" id="beep-mode" value="count">
                         <div class="beep-mode-tabs">
                             <button type="button" class="beep-tab active" id="tab-count"
                                 onclick="switchBeepMode('count', this)">▸ SỐ LẦN BÍP</button>
@@ -93,7 +94,7 @@
 
                         <div id="mode-count">
                             <label class="cyber-label">LOẠI TÍN HIỆU BÍP:</label>
-                            <select name="beep" id="beep-count-select" class="cyber-select"
+                            <select name="beep_count" id="beep-count-select" class="cyber-select"
                                 onchange="previewBeep(this.value)">
                                 <option value="">-- KHÔNG CÓ --</option>
                                 <option value="1 beep">1× — OK/DRAM</option>
@@ -109,18 +110,19 @@
                         </div>
 
                         <div id="mode-duration" style="display:none">
-                            <label class="cyber-label">THỜI LƯỢNG TIẾNG BÍP:</label>
+                            <label class="cyber-label">THỜI LƯỢNG TIẾNG BÍP (CRISP INPUT — GIÂY):</label>
                             <div class="slider-wrapper">
-                                <input type="range" id="beep-duration-slider" min="0" max="5" step="1" value="0"
+                                <input type="range" id="beep-duration-slider" min="0.1" max="6.0" step="0.1" value="0.3"
                                     class="cyber-slider" oninput="updateBeepSlider(this.value)">
                                 <div class="slider-ticks">
-                                    <span>RN</span><span>N</span><span>TB</span><span>D</span><span>RD</span><span>LT</span>
+                                    <span>0.1</span><span>1.0</span><span>2.0</span><span>3.0</span><span>4.0</span><span>5.0</span><span>6.0</span>
                                 </div>
                             </div>
                             <div class="slider-value-display">
-                                <span class="sv-value" id="slider-display-text">Rất Ngắn (0.2s)</span>
+                                <span class="sv-label">CRISP INPUT:</span>
+                                <span class="sv-value" id="slider-display-text">0.3 giây</span>
                             </div>
-                            <input type="hidden" name="beep" id="hidden_beep_duration" value="Very Short">
+                            <input type="hidden" name="beep_duration" id="hidden_beep_duration" value="0.3">
                         </div>
 
                         <div id="beep-preview" class="beep-preview-box">
@@ -192,22 +194,16 @@
             "6 beeps": { sev: "error", label: "6×", diag: "Lỗi KB Ctrl" },
             "7 beeps": { sev: "critical", label: "7×", diag: "Lỗi Chế độ ảo" },
             "8 beeps": { sev: "error", label: "8×", diag: "Lỗi VRAM" },
-            "9+ beeps": { sev: "critical", label: "9+×", diag: "Lỗi BIOS" },
-            "Very Short": { sev: "normal", label: "Rất Ngắn", diag: "Hệ thống OK" },
-            "Short": { sev: "warning", label: "Ngắn", diag: "Cảnh báo POST" },
-            "Medium": { sev: "error", label: "Trung Bình", diag: "Lỗi RAM" },
-            "Long": { sev: "error", label: "Dài", diag: "Lỗi Mainboard" },
-            "Very Long": { sev: "critical", label: "Rất Dài", diag: "Lỗi Nguồn/CPU" },
-            "Continuous": { sev: "critical", label: "Liên Tục", diag: "Ngắn mạch" }
+            "9+ beeps": { sev: "critical", label: "9+×", diag: "Lỗi BIOS" }
         };
 
-        const SLIDER_MAP = [
-            { d: "Rất Ngắn (0.2s)", v: "Very Short" },
-            { d: "Ngắn (0.5s)", v: "Short" },
-            { d: "Trung Bình (1s)", v: "Medium" },
-            { d: "Dài (2.0s)", v: "Long" },
-            { d: "Rất Dài (4.0s)", v: "Very Long" },
-            { d: "Liên Tục (∞)", v: "Continuous" }
+        const DURATION_RANGES = [
+            { max: 0.6, label: "Rất Ngắn", sev: "normal" },
+            { max: 1.2, label: "Ngắn", sev: "warning" },
+            { max: 2.0, label: "Trung Bình", sev: "error" },
+            { max: 3.2, label: "Dài", sev: "error" },
+            { max: 5.0, label: "Rất Dài", sev: "critical" },
+            { max: Infinity, label: "Liên Tục", sev: "critical" }
         ];
 
         function previewBeep(v) {
@@ -224,11 +220,22 @@
         }
 
         function updateBeepSlider(v) {
-            const entry = SLIDER_MAP[v];
-            document.getElementById('slider-display-text').textContent = entry.d;
-            document.getElementById('hidden_beep_duration').value = entry.v;
-            document.getElementById('beep-duration-slider').style.setProperty('--fill-pct', (v / 5) * 100 + '%');
-            previewBeep(entry.v);
+            const val = parseFloat(v);
+            document.getElementById('slider-display-text').textContent = val.toFixed(1) + ' giây';
+            document.getElementById('hidden_beep_duration').value = val.toFixed(1);
+            const pct = ((val - 0.1) / (6.0 - 0.1)) * 100;
+            document.getElementById('beep-duration-slider').style.setProperty('--fill-pct', pct + '%');
+            const range = DURATION_RANGES.find(d => val <= d.max);
+            if (range) {
+                const box = document.getElementById('beep-preview');
+                document.getElementById('preview-label').textContent = range.label + ' (' + val.toFixed(1) + 's)';
+                const sev = document.getElementById('preview-severity');
+                sev.textContent = range.sev.toUpperCase();
+                sev.className = 'preview-sev-badge sev-' + range.sev;
+                document.getElementById('preview-diagnosis').textContent =
+                    'Giá trị crisp ' + val.toFixed(1) + 's → Fuzzification sẽ tính μ trên server';
+                box.classList.add('show');
+            }
         }
 
         function switchBeepMode(mode, el) {
@@ -236,8 +243,8 @@
             el.classList.add('active');
             document.getElementById('mode-count').style.display = (mode === 'count' ? '' : 'none');
             document.getElementById('mode-duration').style.display = (mode === 'duration' ? '' : 'none');
-            document.getElementById('beep-count-select').name = (mode === 'count' ? 'beep' : 'beep_off');
-            document.getElementById('hidden_beep_duration').name = (mode === 'duration' ? 'beep' : 'beep_off');
+            document.getElementById('beep-mode').value = mode;
+            document.getElementById('beep-preview').classList.remove('show');
         }
 
         function updateCategoryFact(cb) {
@@ -252,21 +259,18 @@
             document.getElementById('chevron-' + i).textContent = body.classList.contains('open') ? '▼' : '▶';
         }
 
-        // Laser Scan: intercept submit, play animation, then submit for real
         document.getElementById('diagnose-form').addEventListener('submit', function (e) {
             e.preventDefault();
             const btn = document.getElementById('btn-diagnose');
             const laser = document.getElementById('laser-scan');
-
             btn.innerHTML = '<span class="btn-bracket">[</span> ĐANG QUÉT HỆ THỐNG... <span class="blink-green" style="display:inline-block;margin-left:8px;width:8px;height:8px;"></span> <span class="btn-bracket">]</span>';
             btn.style.pointerEvents = 'none';
             btn.style.opacity = '0.8';
             laser.classList.add('scanning');
-
             setTimeout(() => { HTMLFormElement.prototype.submit.call(this); }, 1500);
         });
 
-        document.addEventListener('DOMContentLoaded', () => { updateBeepSlider(0); });
+        document.addEventListener('DOMContentLoaded', () => { updateBeepSlider(0.3); });
     </script>
 </body>
 
