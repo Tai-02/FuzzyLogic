@@ -4,7 +4,7 @@ import mysql.connector
 import os
 from functools import wraps
 
-from fuzzy import fuzzy_beep_from_crisp, fuzzy_beep_from_count
+from fuzzy import fuzzy_beep_from_crisp, fuzzy_beep_from_count, FuzzyTemperature
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "expert-sys-secret-2025")
@@ -74,6 +74,22 @@ def index():
     if request.method == "POST":
         selected_symptoms = request.form.getlist("symptoms")
         beep_mode = request.form.get("beep_mode", "").strip()
+
+        # --- [THÊM MỚI] Chẩn đoán nhiệt độ bằng FuzzyTemperature ---
+        # Trích xuất tham số từ form (name="pc_type" và name="temperature")
+        pc_type  = request.form.get("pc_type", "office").strip()
+        temp_raw = request.form.get("temperature", "").strip()
+        if temp_raw:
+            try:
+                temp_value   = float(temp_raw)
+                fuzzy_temp   = FuzzyTemperature(pc_type)
+                temp_label   = fuzzy_temp.diagnose(temp_value)
+                # Nối nhãn ngôn ngữ vào working memory trước khi suy diễn tiến
+                # VD: "Temp_Danger" → kích hoạt các luật nhiệt độ trong DB
+                selected_symptoms.append(temp_label)
+            except ValueError:
+                pass  # Bỏ qua nếu giá trị không hợp lệ
+
         rule_results = forward_chaining(selected_symptoms)
 
         beep_result = None

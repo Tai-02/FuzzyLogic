@@ -132,6 +132,48 @@
                         </div>
                     </div>
 
+                    <!-- ═══════════════════════════════════════════════
+                         [THÊM MỚI] KHỐI CHẨN ĐOÁN NHIỆT ĐỘ
+                         Context-Aware Fuzzy Temperature Module
+                    ════════════════════════════════════════════════ -->
+                    <div class="panel-section-label" style="margin-top: 28px;">
+                        <span class="label-line"></span>
+                        <span class="label-text">// NHIỆT ĐỘ HỆ THỐNG (THERMAL ANALYSIS) //</span>
+                        <span class="label-line"></span>
+                    </div>
+
+                    <div class="beep-panel">
+                        <!-- Chọn loại máy (ngữ cảnh) -->
+                        <label class="cyber-label" for="pc_type">LOẠI THIẾT BỊ (Hardware Context):</label>
+                        <select name="pc_type" id="pc_type" class="cyber-select" onchange="updateThermalProfile()">
+                            <option value="office">🖥 Máy bàn / Văn phòng (Desktop / Office)</option>
+                            <option value="gaming">🎮 Laptop Gaming / Hiệu năng cao</option>
+                        </select>
+
+                        <!-- Thanh trượt nhiệt độ -->
+                        <label class="cyber-label" style="margin-top: 14px;" for="temperature">
+                            NHIỆT ĐỘ CPU/GPU ĐO ĐƯỢC:
+                            <span id="temp-display" class="sv-value" style="float:right; color: var(--cyber-accent);">45°C</span>
+                        </label>
+                        <div class="slider-wrapper">
+                            <input type="range" id="temperature" name="temperature"
+                                   min="30" max="110" step="1" value="45"
+                                   class="cyber-slider" oninput="updateTempDisplay(this.value)">
+                            <div class="slider-ticks">
+                                <span>30°</span><span>45°</span><span>60°</span>
+                                <span>75°</span><span>90°</span><span>110°</span>
+                            </div>
+                        </div>
+
+                        <!-- Vùng hiển thị dự đoán real-time -->
+                        <div id="temp-preview" class="beep-preview-box show" style="margin-top: 12px;">
+                            <span id="temp-preview-label" class="preview-label">45°C</span>
+                            <span id="temp-preview-badge" class="preview-sev-badge sev-normal">NORMAL</span>
+                            <div id="temp-preview-info" class="preview-diag">Nhiệt độ ổn định — Hệ thống hoạt động tốt.</div>
+                        </div>
+                    </div>
+                    <!-- ═════ KẾT THÚC KHỐI NHIỆT ĐỘ ════════════════ -->
+
                     <button type="submit" class="cyber-submit-btn" id="btn-diagnose">
                         <span class="btn-bracket">[</span> KHỞI ĐỘNG CHẨN ĐOÁN (DIAGNOSTIC) <span
                             class="btn-bracket">]</span>
@@ -270,7 +312,61 @@
             setTimeout(() => { HTMLFormElement.prototype.submit.call(this); }, 1500);
         });
 
-        document.addEventListener('DOMContentLoaded', () => { updateBeepSlider(0.3); });
+        document.addEventListener('DOMContentLoaded', () => { updateBeepSlider(0.3); updateTempDisplay(45); });
+
+        // ─── [THÊM MỚI] Fuzzy Temperature Preview (Client-side mirror) ───────
+        // Ánh xạ ngưỡng phản chiếu đúng với FuzzyTemperature trong fuzzy.py
+        // để preview tức thì mà không cần round-trip lên server.
+        const TEMP_PROFILES = {
+            office: { warning: [55, 65, 80], danger: [75, 90, 110] },
+            gaming: { warning: [80, 90, 95], danger: [90, 100, 110] },
+        };
+        const TEMP_INFO = {
+            normal:  { badge: 'NORMAL',  cls: 'sev-normal',   msg: 'Temperature is within safe limits — system healthy.' },
+            warning: { badge: 'WARNING', cls: 'sev-warning',  msg: 'Temperature is rising — please check cooling system performance.' },
+            danger:  { badge: 'DANGER',  cls: 'sev-critical', msg: '⚠ CRITICAL OVERHEAT! Risk of Thermal Throttling or Sudden Shutdown.' },
+        };
+
+        function _triMu(x, a, b, c) {
+            if (x <= a || x >= c) return 0;
+            return x <= b ? (x - a) / (b - a) : (c - x) / (c - b);
+        }
+        function _trapMu(x, a, b, c, d) {
+            if (x <= a || x >= d) return 0;
+            if (x < b) return (x - a) / (b - a);
+            if (x <= c) return 1;
+            return (d - x) / (d - c);
+        }
+
+        function _getTempLabel(temp, pcType) {
+            const p = TEMP_PROFILES[pcType] || TEMP_PROFILES.office;
+            const muW = _triMu(temp,  p.warning[0], p.warning[1], p.warning[2]);
+            const muD = pcType === 'office'
+                ? _trapMu(temp, 75,  90, 110, 110)
+                : _trapMu(temp, 90, 100, 110, 110);
+            if (muD >= muW && muD > 0) return 'danger';
+            if (muW > 0)               return 'warning';
+            return 'normal';
+        }
+
+        function updateTempDisplay(val) {
+            val = parseInt(val);
+            const pcType = document.getElementById('pc_type').value;
+            const label  = _getTempLabel(val, pcType);
+            const info   = TEMP_INFO[label];
+            document.getElementById('temp-display').textContent       = val + '°C';
+            document.getElementById('temp-preview-label').textContent = val + '°C';
+            const badge = document.getElementById('temp-preview-badge');
+            badge.textContent = info.badge;
+            badge.className   = 'preview-sev-badge ' + info.cls;
+            document.getElementById('temp-preview-info').textContent  = info.msg;
+        }
+
+        function updateThermalProfile() {
+            // Khi đổi loại máy, cập nhật lại preview theo ngưỡng mới
+            updateTempDisplay(document.getElementById('temperature').value);
+        }
+        // ─── KẾT THÚC Fuzzy Temperature Preview ──────────────────────────────
     </script>
 </body>
 

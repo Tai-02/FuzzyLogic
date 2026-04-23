@@ -225,6 +225,121 @@ FUZZY_RULES_DURATION = {
 }
 
 
+# ==============================================================
+# MODULE MỚI: FuzzyTemperature
+# Chẩn đoán nhiệt độ theo ngữ cảnh phần cứng (Context-Aware)
+# Áp dụng Open-Closed Principle: hoàn toàn độc lập với các
+# module Beep Code và Forward Chaining đã có ở trên.
+# ==============================================================
+
+def _trapezoidal_membership(x, a, b, c, d):
+    """
+    Hàm tính độ thuộc hình thang (Trapezoidal Membership Function).
+    Đồ thị: 0 tại [a], tăng đến 1 tại [b], giữ 1 đến [c], giảm về 0 tại [d].
+    Trường hợp đặc biệt: a==b → cạnh trái thẳng đứng (left-open).
+                          c==d → cạnh phải thẳng đứng (right-open).
+    """
+    if x <= a:
+        return 0.0
+    if a < x < b:
+        return (x - a) / (b - a) if b != a else 1.0
+    if b <= x <= c:
+        return 1.0
+    if c < x < d:
+        return (d - x) / (d - c) if d != c else 1.0
+    return 0.0  # x >= d
+
+
+def _triangular_membership(x, a, b, c):
+    """
+    Hàm tính độ thuộc tam giác (Triangular Membership Function).
+    Đỉnh tại b, đáy từ a đến c.
+    """
+    if x <= a or x >= c:
+        return 0.0
+    if a < x <= b:
+        return (x - a) / (b - a)
+    return (c - x) / (c - b)
+
+
+class FuzzyTemperature:
+    """
+    Hệ thống mờ chẩn đoán nhiệt độ theo ngữ cảnh loại máy tính.
+
+    Tham số:
+        pc_type (str): "office" | "gaming"
+
+    Phương thức chính:
+        diagnose(temp_value) -> str
+            Trả về nhãn ngôn ngữ chiến thắng (Winner-Takes-All):
+            "Temp_Normal" | "Temp_Warning" | "Temp_Danger"
+    """
+
+    # --- Tham số đỉnh của các tập mờ (°C) ---
+    # Theo chuẩn học thuật / thực nghiệm từ Intel/AMD thermal guidelines
+
+    _PROFILES = {
+        # Máy bàn văn phòng: tản nhiệt tốt, ngưỡng cảnh báo thấp hơn
+        "office": {
+            "Normal":  (30, 30, 45, 60),   # Trapezoid: ổn định 30-45°C, giảm đến 60°C
+            "Warning": (55, 65, 80),        # Triangle : đỉnh 65°C
+            "Danger":  (75, 90, 110, 110),  # Trapezoid: nguy hiểm từ 90°C trở lên
+        },
+        # Laptop gaming: tải nhiệt cao hơn, cho phép nhiệt độ cao hơn trước khi cảnh báo
+        "gaming": {
+            "Normal":  (40, 40, 65, 85),   # Trapezoid: ổn định 40-65°C, giảm đến 85°C
+            "Warning": (80, 90, 95),        # Triangle : đỉnh 90°C
+            "Danger":  (90, 100, 110, 110), # Trapezoid: nguy hiểm từ 100°C trở lên
+        },
+    }
+
+    def __init__(self, pc_type: str = "office"):
+        pc_type = pc_type.strip().lower()
+        # Fallback về "office" nếu nhận giá trị không hợp lệ
+        self.profile = self._PROFILES.get(pc_type, self._PROFILES["office"])
+
+    def fuzzify(self, temp_value: float) -> dict:
+        """
+        Mờ hóa (Fuzzification): tính độ thuộc μ của temp_value
+        với từng tập mờ trong profile hiện tại.
+
+        Trả về: dict {"Temp_Normal": μ, "Temp_Warning": μ, "Temp_Danger": μ}
+        """
+        p = self.profile
+        memberships = {}
+
+        # Normal: hình thang (4 đỉnh)
+        a, b, c, d = p["Normal"]
+        memberships["Temp_Normal"] = _trapezoidal_membership(temp_value, a, b, c, d)
+
+        # Warning: tam giác (3 đỉnh)
+        a, b, c = p["Warning"]
+        memberships["Temp_Warning"] = _triangular_membership(temp_value, a, b, c)
+
+        # Danger: hình thang (4 đỉnh)
+        a, b, c, d = p["Danger"]
+        memberships["Temp_Danger"] = _trapezoidal_membership(temp_value, a, b, c, d)
+
+        return memberships
+
+    def diagnose(self, temp_value: float) -> str:
+        """
+        Siêu suy diễn (Defuzzification — Winner Takes All):
+        Trả về nhãn ngôn ngữ của tập mờ có độ thuộc μ cao nhất.
+
+        Ví dụ: temp=95°C, pc_type="office" → "Temp_Danger"
+        """
+        memberships = self.fuzzify(temp_value)
+        winner = max(memberships, key=memberships.get)
+
+        # Nếu tất cả μ == 0 (nhiệt độ nằm ngoài dải định nghĩa),
+        # trả về Normal để hệ thống không phát sinh cảnh báo sai
+        if memberships[winner] == 0.0:
+            return "Temp_Normal"
+
+        return winner
+
+
 def fuzzy_beep_from_crisp(crisp_seconds):
     memberships = fuzzify_duration(crisp_seconds)
     label = defuzzify_max(memberships)

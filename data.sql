@@ -209,3 +209,27 @@ INSERT INTO rules (conditions, conclusion, solution) VALUES
 ('Startup, Fatal Hardware Errors Detected',
  'POST Cannot Complete — System Halted',
  'Boot with minimal config: CPU + 1 RAM stick + no GPU (use iGPU). Add components one at a time to isolate the fault.');
+
+
+-- =============================================
+-- [UPDATE] Luật Nhiệt độ liên hợp (English Version to fix Font Encoding)
+-- =============================================
+
+-- Luật 1: Temp_Danger + Loud fan → Thermal Throttling
+INSERT INTO rules (conditions, conclusion, solution) VALUES
+('Temp_Danger, Loud fan noise',
+ 'Thermal Throttling due to critical overheating',
+ 'Clean the entire cooling system, re-apply high-quality thermal paste (Thermal Grizzly or equivalent). Check if CPU/Case fans are spinning in the correct direction and speed.');
+
+-- Luật 2: Temp_Danger + Shutdown → Thermal Shutdown
+INSERT INTO rules (conditions, conclusion, solution) VALUES
+('Temp_Danger, Sudden system shutdown',
+ 'Motherboard triggered self-defense power cut (Tjunction Max reached)',
+ 'Do not restart immediately. Check AIO pump or CPU fan status. Remove heatsink, clean and apply new thermal paste before rebooting.');
+
+-- Luật 3: Temp_Warning + Lagging → Poor Airflow
+INSERT INTO rules (conditions, conclusion, solution) VALUES
+('Temp_Warning, System lagging',
+ 'Cooling efficiency decreasing, unable to maintain maximum clock speed',
+ 'Lift the base of the device to increase airflow. Check ambient room temperature (> 35°C will affect performance). Clean dust from heatsinks and case fans.');
+
