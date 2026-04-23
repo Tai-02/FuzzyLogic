@@ -37,6 +37,12 @@ CREATE TABLE rules (
 );
 
 -- =============================================
+-- Nguồn: Bassil (2012)
+-- "A Simulation Model for an Expert PC Troubleshooter"
+-- International Journal of Artificial Intelligence & Applications (IJAIA), Vol.3, No.2.
+-- Table 1 (trang 15) — Original 30 Diagnostic Rules
+-- =============================================
+
 -- Nhóm: Audio (Âm thanh)
 -- =============================================
 INSERT INTO rules (conditions, conclusion, solution) VALUES
@@ -115,38 +121,91 @@ INSERT INTO rules (conditions, conclusion, solution) VALUES
 ('Startup, Computer won\'t Start After Installing Card', 'Conflict or Defective Hardware', 'Remove all Connected Cards and Try Again');
 
 -- =============================================
--- LUẬT CHUỖI (CHAIN RULES)
--- Sử dụng kết luận của các luật trước làm điều kiện
--- để Forward Chaining chạy nhiều vòng (multi-pass)
+-- Nguồn: Mandal, Chatterjee & Neogi (2013)
+-- "Diagnosis and Troubleshooting of Computer Faults
+--  Based on Expert System and Artificial Intelligence"
+-- International Journal of Pure and Applied Mathematics,
+-- Vol. 83, No. 5, pp. 717-729
+-- Bảng: Table 1 (trang 721) — Sound System Problem
+-- =============================================
+INSERT INTO rules (conditions, conclusion, solution) VALUES
+('Audio, No Sound From Speakers',
+ 'Volume Turned Off or Muted',
+ 'Double-click the speaker icon on the taskbar. Check that the Mute option is not selected and adjust volume.'),
+
+('Audio, Volume Is Too Low',
+ 'Speaker Volume Set Too Low',
+ 'Press the Volume Up button on keyboard or double-click the speaker icon and drag the slider up.'),
+
+('Audio, No Sound At All',
+ 'Speaker Cables Not Connected',
+ 'Refer to the quick setup guide for instructions on how to connect speakers to your computer.'),
+
+('Audio, Sound Is Distorted',
+ 'Volume Level Set Too High',
+ 'Press Volume Down button on keyboard or double-click speaker icon and set volume to a lower level.'),
+
+('Audio, No Sound In Windows',
+ 'Fault In Volume Control Settings',
+ 'Double-click the speaker icon on the Windows taskbar, click the slider and drag it up.'),
+
+('Audio, Windows Does Not Detect Audio',
+ 'Audio Driver Not Installed or Corrupted',
+ 'Open Control Panel → Sound/Video/Game Controllers → Device Manager. Remove old audio driver and restart to reinstall.');
+
+-- =============================================
+-- Nguồn: Abu-Naser & Al-Dahdooh (2019)
+-- "Design and Implementation of A Mobile Expert System
+--  for Computer Hardware Troubleshooting"
+-- ResearchGate, October 2019
+-- Trang 3-4 — VGA & Power Supply rules
+-- =============================================
+INSERT INTO rules (conditions, conclusion, solution) VALUES
+('Startup, No Display On Monitor',
+ 'Failure In Power Cord, Monitor Cable, or VGA Card',
+ 'Reinstall power cable, fix or replace power supply, change monitor power cable or replace VGA card.'),
+
+('Startup, Blurry or Distorted Display',
+ 'VGA Card Not Properly Installed',
+ 'Power off, reseat the VGA card firmly into the PCIe slot, secure the bracket screw, and restart.'),
+
+('Startup, System Restarts Randomly',
+ 'Power Supply Voltage Unstable',
+ 'Test PSU with digital multimeter (DMM). Replace with a higher wattage unit (400W+) if readings are out of range.');
+
+-- =============================================
+-- Chain Rules — thiết kế bởi Nhóm 8
+-- Kết luận của luật trước → điều kiện của luật sau
+-- Mục đích: minh chứng Forward Chaining multi-pass
 -- =============================================
 
--- Chain 1: Lỗi nguồn điện nghiêm trọng
--- Nếu vừa phát hiện PSU voltage lỗi + PSU quá tải → Critical PSU Failure
+-- Chuỗi 1: BIOS cũ → không nhận HDD → không boot được
 INSERT INTO rules (conditions, conclusion, solution) VALUES
-('Power Good Voltage Level out of Limits, Defective or Overloaded Power Supply',
- 'Critical PSU Failure — Immediate Replacement Required',
- 'Multiple PSU failure indicators detected simultaneously.\n1) Disconnect all power cables immediately.\n2) Test PSU with multimeter — check +3.3V, +5V, +12V rails.\n3) Replace PSU with unit rated 300W or higher.\n4) After replacing, run burn-in test for 24 hours to verify stability.');
+('Hard Disk, Can\'t Access Full Capacity over 8.4GB',
+ 'BIOS is Out-of-Date',
+ 'Upgrade BIOS to latest version from manufacturer website.'),
 
--- Chain 2: Lỗi hiển thị + phần cứng nghiêm trọng → mainboard
-INSERT INTO rules (conditions, conclusion, solution) VALUES
-('Video Card Problem, Fatal Hardware Errors',
- 'Mainboard-Level Display Subsystem Failure',
- 'Both video and fatal hardware errors indicate mainboard-level failure.\n1) Remove all expansion cards.\n2) Test with integrated graphics if available.\n3) Try a known-good video card in another PCIe slot.\n4) If all fail, the PCIe slot or mainboard chipset is likely damaged — consider mainboard replacement.');
+-- Luật này dùng kết luận "BIOS is Out-of-Date" từ luật trên làm điều kiện
+('Startup, BIOS is Out-of-Date',
+ 'System May Fail To Recognize New Hardware',
+ 'Update BIOS immediately. Old BIOS version causes incompatibility with modern drives and processors.');
 
--- Chain 3: BIOS lỗi thời + Ổ cứng không khởi tạo được
+-- Chuỗi 2: PSU lỗi → HDD không quay → không tìm thấy ổ cứng
 INSERT INTO rules (conditions, conclusion, solution) VALUES
-('BIOS is Out-of-Date, Drive has not Been Partitioned',
- 'Storage Subsystem Initialization Failure',
- 'Both BIOS and drive partition issues detected.\n1) Update BIOS firmware first.\n2) After BIOS update, run FDISK to create partitions.\n3) Format the drive.\n4) If drive still not recognized, check SATA cable and port.');
+('Power Supply, Hard Disk or Fan won\'t Turn',
+ 'Defective or Overloaded Power Supply',
+ 'Replace with 300W+ power supply unit.'),
 
--- Chain 4: BIOS lỗi + mật khẩu khóa → Deadlock
-INSERT INTO rules (conditions, conclusion, solution) VALUES
-('BIOS is out-of-date, BIOS is Password Protected',
- 'BIOS Access and Update Deadlock',
- 'Cannot update BIOS because it is password-protected.\n1) Clear CMOS by removing battery for 30 seconds.\n2) Use motherboard jumper to reset BIOS password.\n3) After reset, immediately update BIOS firmware.\n4) Set a new documented password after update.');
+('Startup, Defective or Overloaded Power Supply',
+ 'Storage Devices May Not Receive Sufficient Power',
+ 'After replacing PSU, check all SATA power connectors are firmly seated on drives.');
 
--- Chain 5: PSU hỏng + Card xung đột → Toàn hệ thống
+-- Chuỗi 3: RAM lỗi → không POST → hệ thống beep
 INSERT INTO rules (conditions, conclusion, solution) VALUES
-('Defective Power Supply, Conflict or Defective Hardware',
- 'System-Wide Power and Hardware Conflict',
- 'Power supply failure combined with hardware conflict indicates cascading system failure.\n1) Replace PSU first.\n2) Remove all non-essential cards and peripherals.\n3) Boot with minimal configuration (CPU + 1 RAM stick + onboard video).\n4) Add components one by one to isolate the conflict.');
+('Startup, System Beeps Several Times',
+ 'Fatal Hardware Errors Detected',
+ 'Check for any defective hardware — reseat RAM, GPU, and all expansion cards.'),
+
+('Startup, Fatal Hardware Errors Detected',
+ 'POST Cannot Complete — System Halted',
+ 'Boot with minimal config: CPU + 1 RAM stick + no GPU (use iGPU). Add components one at a time to isolate the fault.');
