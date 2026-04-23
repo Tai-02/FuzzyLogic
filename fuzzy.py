@@ -233,21 +233,17 @@ FUZZY_RULES_DURATION = {
 # ==============================================================
 
 def _trapezoidal_membership(x, a, b, c, d):
-    """
-    Hàm tính độ thuộc hình thang (Trapezoidal Membership Function).
-    Đồ thị: 0 tại [a], tăng đến 1 tại [b], giữ 1 đến [c], giảm về 0 tại [d].
-    Trường hợp đặc biệt: a==b → cạnh trái thẳng đứng (left-open).
-                          c==d → cạnh phải thẳng đứng (right-open).
-    """
     if x <= a:
         return 0.0
+    if x >= d:
+        return 1.0 if c == d else 0.0
     if a < x < b:
         return (x - a) / (b - a) if b != a else 1.0
     if b <= x <= c:
         return 1.0
     if c < x < d:
         return (d - x) / (d - c) if d != c else 1.0
-    return 0.0  # x >= d
+    return 0.0
 
 
 def _triangular_membership(x, a, b, c):

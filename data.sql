@@ -211,25 +211,36 @@ INSERT INTO rules (conditions, conclusion, solution) VALUES
  'Boot with minimal config: CPU + 1 RAM stick + no GPU (use iGPU). Add components one at a time to isolate the fault.');
 
 
--- =============================================
--- [UPDATE] Luật Nhiệt độ liên hợp (English Version to fix Font Encoding)
--- =============================================
+-- ==============================================================
+-- [MODULE] CHẨN ĐOÁN NHIỆT ĐỘ (FUZZY TEMPERATURE MODULE)
+-- ==============================================================
 
--- Luật 1: Temp_Danger + Loud fan → Thermal Throttling
+-- BƯỚC 1: Thêm các Triệu chứng (Symptoms) mới vào Database
+-- Để giao diện hiện ra các ô checkbox trong danh mục Cooling và Performance
 INSERT INTO rules (conditions, conclusion, solution) VALUES
-('Temp_Danger, Loud fan noise',
- 'Thermal Throttling due to critical overheating',
- 'Clean the entire cooling system, re-apply high-quality thermal paste (Thermal Grizzly or equivalent). Check if CPU/Case fans are spinning in the correct direction and speed.');
+('Cooling, Quạt kêu to (Loud fan noise)', 'Quạt tản nhiệt hoạt động tối đa', 'Kiểm tra xem hệ thống có đang quá tải nhiệt không.'),
+('Cooling, Máy tự tắt đột ngột (Random Shutdown)', 'Hệ thống tự tắt đột ngột', 'Dấu hiệu của việc sụt nguồn hoặc quá nhiệt nghiêm trọng.'),
+('Performance, Máy chạy chậm dần (Lagging)', 'Hệ thống phản hồi chậm', 'Kiểm tra tài nguyên CPU/RAM hoặc hệ thống tản nhiệt.');
 
--- Luật 2: Temp_Danger + Shutdown → Thermal Shutdown
+-- BƯỚC 2: Thêm "Luật Độc Lập" (Standalone Rules) cho Nhiệt độ
+-- Xử lý trường hợp chỉ kéo thanh nhiệt độ mà không tích checkbox
 INSERT INTO rules (conditions, conclusion, solution) VALUES
-('Temp_Danger, Sudden system shutdown',
- 'Motherboard triggered self-defense power cut (Tjunction Max reached)',
- 'Do not restart immediately. Check AIO pump or CPU fan status. Remove heatsink, clean and apply new thermal paste before rebooting.');
+('Temp_Danger', 'Hệ thống đang quá nhiệt ở mức Đe dọa phần cứng', 'Lập tức lưu dữ liệu và tắt máy. Kiểm tra lại toàn bộ hệ thống tản nhiệt ngay khi máy nguội.'),
+('Temp_Warning', 'Hệ thống đang hoạt động ở mức nhiệt độ Cảnh báo', 'Theo dõi sát sao. Nếu không chạy tác vụ nặng (Game/Render) mà vẫn đạt mức này, hãy lên lịch vệ sinh máy.');
 
--- Luật 3: Temp_Warning + Lagging → Poor Airflow
+-- BƯỚC 3: Thêm "Luật Liên Hợp" (Combined Rules)
+-- Kết hợp nhãn Fuzzy Temperature và Triệu chứng thực tế
 INSERT INTO rules (conditions, conclusion, solution) VALUES
-('Temp_Warning, System lagging',
- 'Cooling efficiency decreasing, unable to maintain maximum clock speed',
- 'Lift the base of the device to increase airflow. Check ambient room temperature (> 35°C will affect performance). Clean dust from heatsinks and case fans.');
+('Temp_Danger, Quạt kêu to (Loud fan noise)', 
+ 'Quá nhiệt nghiêm trọng dẫn đến hạ xung (Thermal Throttling)', 
+ 'Vệ sinh toàn bộ hệ thống tản nhiệt, tra lại keo tản nhiệt chất lượng cao.'),
+
+('Temp_Danger, Máy tự tắt đột ngột (Random Shutdown)', 
+ 'Bo mạch chủ kích hoạt cơ chế ngắt điện tự vệ do chạm ngưỡng Tjunction Max', 
+ 'Tuyệt đối không bật lại máy. Kiểm tra ngay tình trạng bơm tản nhiệt hoặc quạt CPU.'),
+
+('Temp_Warning, Máy chạy chậm dần (Lagging)', 
+ 'Hệ thống tản nhiệt bắt đầu kém hiệu quả, không duy trì được xung nhịp tối đa', 
+ 'Kê cao đáy máy để tăng luồng khí (Airflow), kiểm tra môi trường phòng.');
+
 
