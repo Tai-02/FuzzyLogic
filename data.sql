@@ -17,7 +17,6 @@ CREATE TABLE admins (
 );
  
 -- Tài khoản mặc định: admin / admin123
--- (hash bằng werkzeug generate_password_hash)
 INSERT INTO admins (username, password_hash) VALUES (
     'admin',
     'scrypt:32768:8:1$kjWX2eCGiBuhADGW$a5cac878fa193b70a7077e4b8b99a2bc38136da37336359a84f784cfd614931ee04536c629323ce4c3579423d01879fa8613589c7a2cac7086b44fdd83d1e7d3'
@@ -38,205 +37,186 @@ CREATE TABLE rules (
 
 -- =============================================
 -- Nguồn: Bassil (2012)
--- "A Simulation Model for an Expert PC Troubleshooter"
--- International Journal of Artificial Intelligence & Applications (IJAIA), Vol.3, No.2.
 -- Table 1 (trang 15) — Original 30 Diagnostic Rules
 -- =============================================
 
 -- Nhóm: Audio (Âm thanh)
 -- =============================================
 INSERT INTO rules (conditions, conclusion, solution) VALUES
-('Audio, Sound Card can\'t be Detected', 'Damaged or Sound Card Not Installed', 'Replace Sound Card'),
-('Audio, Driver Warning', 'Driver Conflict or Incompatible Driver', 'Install The Appropriate Driver'),
-('Audio, Scratchy Sound', 'Signal Interference', 'Stay Away from Radio Frequency Sources'),
-('Audio, Speaker or Microphone won\'t Work', 'Incorrect Jacks', 'Use Proper Jacks');
+('Audio, Không nhận diện được Sound Card', 'Sound Card bị hỏng hoặc chưa được cài đặt', 'Thay thế Sound Card'),
+('Audio, Cảnh báo lỗi Driver', 'Xung đột Driver hoặc Driver không tương thích', 'Cài đặt Driver phù hợp'),
+('Audio, Âm thanh bị nhiễu sóng', 'Nhiễu tín hiệu (Signal Interference)', 'Tránh xa các nguồn phát sóng Radio (RF)'),
+('Audio, Loa hoặc Microphone không hoạt động', 'Cắm sai cổng (Jacks)', 'Cắm lại đúng cổng');
 
 -- =============================================
 -- Nhóm: BIOS
 -- =============================================
 INSERT INTO rules (conditions, conclusion, solution) VALUES
-('BIOS, Calendar-Related and Leap-Year Bugs', 'BIOS is out-of-date', 'Upgrade Flash BIOS'),
-('BIOS, Can\'t Install Flash BIOS Update', 'BIOS is Write-Protected', 'Disable Write-Protection'),
-('BIOS, Can\'t Access BIOS', 'BIOS is Password Protected', 'Remove Password');
+('BIOS, Lỗi sai ngày tháng hoặc năm nhuận', 'Phiên bản BIOS đã cũ', 'Cập nhật Flash BIOS'),
+('BIOS, Không thể cập nhật Flash BIOS', 'BIOS đang bị khóa ghi (Write-Protected)', 'Tắt chế độ khóa ghi'),
+('BIOS, Không thể truy cập vào BIOS', 'BIOS đang bị khóa mật khẩu', 'Xóa mật khẩu BIOS (Clear CMOS)');
 
 -- =============================================
 -- Nhóm: Hard Disk (Ổ cứng)
 -- =============================================
 INSERT INTO rules (conditions, conclusion, solution) VALUES
-('Hard Disk, Can\'t Access Full Capacity over 8.4GB', 'BIOS is Out-of-Date', 'Upgrade BIOS'),
-('Hard Disk, Can\'t Use UDMA Drives at Full Speed', 'BIOS is Out-of-Date or Incompatible IDE Cable', 'Upgrade BIOS or Replace IDE Cable'),
-('Hard Disk, IDE Drive not Ready Errors During Startup', 'Drive not Spinning Up Fast Enough at Startup', 'Enable or Increase Hard Disk Predelay-time'),
-('Hard Disk, Invalid Drive Specification Error', 'Drive has not Been Partitioned', 'Run FDISK to Create Valid Partitions'),
-('Hard Disk, Invalid Media Type Error', 'Drive not Yet Formatted', 'Format your Drive'),
-('Hard Disk, SMART Warning Displayed', 'Serious Mechanical Problems are Detected', 'Backup & Replace Your Drive');
+('Hard Disk, Không nhận đủ dung lượng ổ cứng', 'Phiên bản BIOS đã cũ', 'Cập nhật BIOS'),
+('Hard Disk, Ổ cứng UDMA không chạy hết tốc độ', 'BIOS cũ hoặc cáp IDE không tương thích', 'Cập nhật BIOS hoặc thay cáp IDE'),
+('Hard Disk, Lỗi ổ IDE chưa sẵn sàng khi khởi động', 'Ổ cứng khởi động vòng quay quá chậm', 'Bật hoặc tăng độ trễ (Predelay-time) trong BIOS'),
+('Hard Disk, Lỗi phân vùng ổ cứng không hợp lệ', 'Ổ cứng chưa được phân vùng', 'Dùng FDISK/Diskpart để tạo phân vùng hợp lệ'),
+('Hard Disk, Lỗi định dạng ổ cứng', 'Ổ cứng chưa được Format', 'Format lại ổ cứng'),
+('Hard Disk, Hiện cảnh báo SMART', 'Phát hiện lỗi cơ học nghiêm trọng', 'Sao lưu dữ liệu ngay lập tức và thay ổ cứng mới');
 
 -- =============================================
 -- Nhóm: Keyboard (Bàn phím)
 -- =============================================
 INSERT INTO rules (conditions, conclusion, solution) VALUES
-('Keyboard, Num Lock Stays Off when Starting System', 'Num Lock Shut off in BIOS', 'Turn on Num Lock in BIOS'),
-('Keyboard, Intermittent Keyboard Failures', 'Keyboard Cable or Keyboard Jack Might be Defective', 'Test Keyboard Cable or Jack with Digital Multimeter'),
-('Keyboard, Keys are Sticking', 'Keyboard might have Spilled Drink or Trapped Debris', 'Remove Keytops and Clean under Keys, or Wash-out Keyboard');
+('Keyboard, Phím Num Lock tắt khi khởi động máy', 'Num Lock bị tắt mặc định trong BIOS', 'Bật Num Lock trong BIOS'),
+('Keyboard, Bàn phím chập chờn', 'Cáp bàn phím hoặc cổng cắm bị lỗi', 'Kiểm tra cáp hoặc cổng cắm bằng đồng hồ VOM'),
+('Keyboard, Phím bị kẹt cứng', 'Bàn phím bị đổ nước hoặc kẹt rác', 'Tháo nút phím và vệ sinh sạch sẽ');
 
 -- =============================================
 -- Nhóm: Mouse (Chuột)
 -- =============================================
 INSERT INTO rules (conditions, conclusion, solution) VALUES
-('Mouse, Mouse can\'t be Detected', 'Hardware Resource Conflict', 'Use Windows Device Manager to Find Conflicts and Resolve them'),
-('Mouse, Can\'t use PS/2 Mouse', 'PS/2 Mouse Port Might be Disabled', 'Enable PS/2 Mouse Port'),
-('Mouse, Mouse Pointer Jerks Onscreen', 'Mouse Ball or Rollers are Dirty', 'Clean Mouse Mechanism'),
-('Mouse, Mouse Works in Windows but Not in DOS', 'DOS Driver Must be Loaded from AUTOEXEC.BAT or CONFIG.SYS', 'Install DOS Mouse Driver, and Reference it in Startup Files');
+('Mouse, Không nhận diện được Chuột', 'Xung đột tài nguyên phần cứng', 'Dùng Windows Device Manager để tìm và sửa lỗi xung đột'),
+('Mouse, Không dùng được cổng PS/2', 'Cổng PS/2 bị vô hiệu hóa', 'Bật cổng PS/2 trong BIOS'),
+('Mouse, Con trỏ chuột bị giật lag', 'Cảm biến chuột bị dơ', 'Vệ sinh cảm biến chuột'),
+('Mouse, Chuột chạy trong Windows nhưng không chạy trong DOS', 'Chưa nạp DOS Driver', 'Cài đặt DOS Mouse Driver');
 
 -- =============================================
--- Nhóm: Power Supply (Nguồn điện)
+-- Nhóm: Power Supply (Nguồn điện - PSU)
 -- =============================================
 INSERT INTO rules (conditions, conclusion, solution) VALUES
-('Power Supply, System Reboots', 'Power Good Voltage Level out of Limits', 'Check Power Supply with DMM; Replace Power Supply if Defective'),
-('Power Supply, Fails after Additional Components Added', 'New Components Require more 5V Power than Old Power Supply can Provide', 'Replace Failed Unit with a 300-watt or Larger Unit'),
-('Power Supply, Hard Disk or Fan won\'t Turn', 'Defective or Overloaded Power Supply', 'Replace Failed Unit with a 300-watt or Larger Unit'),
-('Power Supply, No Leds No Fans are Turn', 'Defective Power Supply', 'Replace Power Supply');
+('Power Supply, Hệ thống tự khởi động lại (Reboots)', 'Điện áp (Voltage) không ổn định vượt ngưỡng', 'Kiểm tra Nguồn (PSU), thay thế nếu bị lỗi'),
+('Power Supply, Lỗi sập nguồn sau khi gắn thêm linh kiện', 'Linh kiện mới tiêu thụ quá nhiều điện năng 5V', 'Thay Nguồn (PSU) có công suất 300W trở lên'),
+('Power Supply, Ổ cứng hoặc Quạt không quay', 'Nguồn bị lỗi hoặc quá tải', 'Thay Nguồn (PSU) có công suất cao hơn'),
+('Power Supply, Không sáng đèn, không quay quạt', 'Nguồn bị chết hoàn toàn', 'Thay Nguồn (PSU) mới');
 
 -- =============================================
--- Nhóm: Processor (Vi xử lý)
+-- Nhóm: Processor (Vi xử lý - CPU)
 -- =============================================
 INSERT INTO rules (conditions, conclusion, solution) VALUES
-('Processor, System won\'t Start After New Processor Installed', 'Processor not Properly Installed', 'Reseat and Reinstall Processor and Heatsink'),
-('Processor, Improper CPU Identification during POST', 'Old BIOS', 'Upgrade BIOS');
+('Processor, Máy không chạy sau khi thay CPU', 'Lắp đặt CPU chưa đúng cách', 'Tháo ra và lắp lại CPU cùng tản nhiệt (Heatsink)'),
+('Processor, Nhận diện sai CPU khi POST', 'Phiên bản BIOS đã cũ', 'Cập nhật BIOS');
 
 -- =============================================
 -- Nhóm: Serial ATA
 -- =============================================
 INSERT INTO rules (conditions, conclusion, solution) VALUES
-('Serial ATA, Drives are not Recognized by System', 'Some Systems have Disabled Serial ATA Ports', 'Enable Onboard Serial ATA ports'),
-('Serial ATA, Can\'t use Onboard Serial Port', 'Port Might be Disabled in BIOS', 'Enable Port'),
-('Serial ATA, Conflict between Onboard Serial Port and other Device', 'IRQ or I/O port Address Conflicts with other Device', 'Adjust IRQ or I/O port Address in Use, or Disable Port');
+('Serial ATA, Không nhận diện được ổ cứng SATA', 'Cổng SATA đang bị vô hiệu hóa', 'Bật cổng SATA trên Mainboard'),
+('Serial ATA, Không dùng được cổng Serial onboard', 'Cổng Serial bị vô hiệu hóa trong BIOS', 'Bật cổng Serial'),
+('Serial ATA, Xung đột cổng Serial với thiết bị khác', 'Lỗi xung đột IRQ hoặc địa chỉ I/O', 'Chỉnh lại IRQ hoặc tắt cổng Serial');
 
 -- =============================================
 -- Nhóm: Startup (Khởi động)
 -- =============================================
 INSERT INTO rules (conditions, conclusion, solution) VALUES
-('Startup, No Live Screen But System is On', 'Video Card Problem', 'Replace your Video Card'),
-('Startup, System Beeps Several Times', 'Fatal Hardware Errors', 'Check for Any Defective Hardware'),
-('Startup, System Can\'t Find any Hard Drive', 'Boot Priority Errors', 'Set Hard Drive as the 1st Booting Device'),
-('Startup, Computer won\'t Start After Installing Card', 'Conflict or Defective Hardware', 'Remove all Connected Cards and Try Again');
+('Startup, Máy lên nguồn nhưng không xuất hình', 'Lỗi Video Card (Card màn hình rời)', 'Thay thế hoặc sửa chữa Video Card'),
+('Startup, Hệ thống kêu bíp nhiều lần', 'Lỗi phần cứng nghiêm trọng (Fatal Hardware Errors)', 'Kiểm tra các linh kiện đang bị lỗi (RAM, VGA)'),
+('Startup, Hệ thống không tìm thấy ổ cứng boot', 'Lỗi thứ tự khởi động (Boot Priority)', 'Vào BIOS cài đặt ổ cứng làm thiết bị khởi động đầu tiên'),
+('Startup, Máy không chạy sau khi gắn thêm Card rời', 'Xung đột phần cứng hoặc Card bị lỗi', 'Tháo tất cả các Card mới gắn và thử lại');
 
 -- =============================================
 -- Nguồn: Mandal, Chatterjee & Neogi (2013)
--- "Diagnosis and Troubleshooting of Computer Faults
---  Based on Expert System and Artificial Intelligence"
--- International Journal of Pure and Applied Mathematics,
--- Vol. 83, No. 5, pp. 717-729
 -- Bảng: Table 1 (trang 721) — Sound System Problem
 -- =============================================
 INSERT INTO rules (conditions, conclusion, solution) VALUES
-('Audio, No Sound From Speakers',
- 'Volume Turned Off or Muted',
- 'Double-click the speaker icon on the taskbar. Check that the Mute option is not selected and adjust volume.'),
+('Audio, Loa không phát ra tiếng',
+ 'Âm lượng bị tắt (Muted) hoặc mức 0',
+ 'Nhấp đúp vào biểu tượng loa trên thanh taskbar. Kiểm tra tùy chọn Mute và điều chỉnh âm lượng.'),
 
-('Audio, Volume Is Too Low',
- 'Speaker Volume Set Too Low',
- 'Press the Volume Up button on keyboard or double-click the speaker icon and drag the slider up.'),
+('Audio, Âm lượng quá nhỏ',
+ 'Mức âm lượng hệ thống cài đặt quá thấp',
+ 'Nhấn nút tăng âm lượng trên bàn phím hoặc điều chỉnh thanh trượt âm lượng trên Windows.'),
 
-('Audio, No Sound At All',
- 'Speaker Cables Not Connected',
- 'Refer to the quick setup guide for instructions on how to connect speakers to your computer.'),
+('Audio, Hoàn toàn không có tín hiệu âm thanh',
+ 'Chưa cắm cáp âm thanh (Speaker Cables)',
+ 'Tham khảo sách hướng dẫn để cắm cáp loa đúng vào cổng Audio Out (màu xanh lá).'),
 
-('Audio, Sound Is Distorted',
- 'Volume Level Set Too High',
- 'Press Volume Down button on keyboard or double-click speaker icon and set volume to a lower level.'),
+('Audio, Âm thanh bị méo tiếng',
+ 'Mức âm lượng cài đặt quá cao (Quá công suất)',
+ 'Giảm mức âm lượng hệ thống hoặc loa ngoài xuống mức vừa phải.'),
 
-('Audio, No Sound In Windows',
- 'Fault In Volume Control Settings',
- 'Double-click the speaker icon on the Windows taskbar, click the slider and drag it up.'),
+('Audio, Không có âm thanh trong Windows',
+ 'Lỗi trong cài đặt Volume Control',
+ 'Mở Volume Mixer trên Windows và đảm bảo các ứng dụng không bị kéo thanh trượt xuống đáy.'),
 
-('Audio, Windows Does Not Detect Audio',
- 'Audio Driver Not Installed or Corrupted',
- 'Open Control Panel → Sound/Video/Game Controllers → Device Manager. Remove old audio driver and restart to reinstall.');
+('Audio, Windows không nhận diện được thiết bị âm thanh',
+ 'Audio Driver chưa cài đặt hoặc bị hỏng',
+ 'Vào Device Manager, xóa Audio Driver cũ và khởi động lại máy để tự cài đặt lại.');
 
 -- =============================================
 -- Nguồn: Abu-Naser & Al-Dahdooh (2019)
--- "Design and Implementation of A Mobile Expert System
---  for Computer Hardware Troubleshooting"
--- ResearchGate, October 2019
 -- Trang 3-4 — VGA & Power Supply rules
 -- =============================================
 INSERT INTO rules (conditions, conclusion, solution) VALUES
-('Startup, No Display On Monitor',
- 'Failure In Power Cord, Monitor Cable, or VGA Card',
- 'Reinstall power cable, fix or replace power supply, change monitor power cable or replace VGA card.'),
+('Startup, Màn hình không hiển thị gì',
+ 'Lỗi cáp nguồn, cáp màn hình, hoặc hỏng VGA Card',
+ 'Cắm lại cáp nguồn, cáp màn hình. Nếu không được hãy thay thế VGA Card.'),
 
-('Startup, Blurry or Distorted Display',
- 'VGA Card Not Properly Installed',
- 'Power off, reseat the VGA card firmly into the PCIe slot, secure the bracket screw, and restart.'),
+('Startup, Màn hình bị nhòe hoặc sai màu',
+ 'VGA Card cắm lỏng hoặc lỗi VRAM',
+ 'Tắt máy, tháo VGA Card ra vệ sinh chân cắm (PCIe) và cắm chặt lại.'),
 
-('Startup, System Restarts Randomly',
- 'Power Supply Voltage Unstable',
- 'Test PSU with digital multimeter (DMM). Replace with a higher wattage unit (400W+) if readings are out of range.');
+('Startup, Hệ thống tự động Restart ngẫu nhiên',
+ 'Điện áp Nguồn (PSU) không ổn định',
+ 'Test Nguồn bằng đồng hồ DMM. Thay Nguồn công suất thực cao hơn (ví dụ 400W+) nếu thông số bị tụt áp.');
 
 -- =============================================
 -- Chain Rules — thiết kế bởi Nhóm 8
--- Kết luận của luật trước → điều kiện của luật sau
--- Mục đích: minh chứng Forward Chaining multi-pass
 -- =============================================
 
 -- Chuỗi 1: BIOS cũ → không nhận HDD → không boot được
 INSERT INTO rules (conditions, conclusion, solution) VALUES
-('Hard Disk, Can\'t Access Full Capacity over 8.4GB',
- 'BIOS is Out-of-Date',
- 'Upgrade BIOS to latest version from manufacturer website.'),
+('Hard Disk, Không nhận đủ dung lượng ổ cứng',
+ 'Phiên bản BIOS đã cũ',
+ 'Cập nhật BIOS lên phiên bản mới nhất từ trang chủ nhà sản xuất.'),
 
--- Luật này dùng kết luận "BIOS is Out-of-Date" từ luật trên làm điều kiện
-('Startup, BIOS is Out-of-Date',
- 'System May Fail To Recognize New Hardware',
- 'Update BIOS immediately. Old BIOS version causes incompatibility with modern drives and processors.');
+('Startup, Phiên bản BIOS đã cũ',
+ 'Hệ thống có thể không nhận diện được phần cứng đời mới',
+ 'Cập nhật BIOS ngay lập tức. BIOS cũ thường gây lỗi không tương thích với ổ cứng và CPU mới.');
 
 -- Chuỗi 2: PSU lỗi → HDD không quay → không tìm thấy ổ cứng
 INSERT INTO rules (conditions, conclusion, solution) VALUES
-('Power Supply, Hard Disk or Fan won\'t Turn',
- 'Defective or Overloaded Power Supply',
- 'Replace with 300W+ power supply unit.'),
+('Power Supply, Ổ cứng hoặc Quạt không quay',
+ 'Nguồn bị lỗi hoặc quá tải',
+ 'Thay Nguồn (PSU) có công suất 300W trở lên.'),
 
-('Startup, Defective or Overloaded Power Supply',
- 'Storage Devices May Not Receive Sufficient Power',
- 'After replacing PSU, check all SATA power connectors are firmly seated on drives.');
+('Startup, Nguồn bị lỗi hoặc quá tải',
+ 'Các ổ đĩa lưu trữ (Storage Devices) không nhận đủ điện',
+ 'Sau khi thay Nguồn, hãy kiểm tra lại các đầu cắm nguồn SATA xem đã cắm chặt vào ổ cứng chưa.');
 
 -- Chuỗi 3: RAM lỗi → không POST → hệ thống beep
 INSERT INTO rules (conditions, conclusion, solution) VALUES
-('Startup, System Beeps Several Times',
- 'Fatal Hardware Errors Detected',
- 'Check for any defective hardware — reseat RAM, GPU, and all expansion cards.'),
+('Startup, Hệ thống kêu bíp nhiều lần',
+ 'Phát hiện lỗi phần cứng nghiêm trọng',
+ 'Kiểm tra các linh kiện đang bị lỗi — tháo ra cắm lại RAM, VGA Card và các Card mở rộng.'),
 
-('Startup, Fatal Hardware Errors Detected',
- 'POST Cannot Complete — System Halted',
- 'Boot with minimal config: CPU + 1 RAM stick + no GPU (use iGPU). Add components one at a time to isolate the fault.');
+('Startup, Phát hiện lỗi phần cứng nghiêm trọng',
+ 'Quá trình POST thất bại — Hệ thống bị treo',
+ 'Boot máy với cấu hình tối giản: CPU + 1 thanh RAM + dùng iGPU. Gắn thêm từng linh kiện để tìm ra món nào bị hỏng.');
 
 
 -- ==============================================================
 -- [MODULE] CHẨN ĐOÁN NHIỆT ĐỘ (FUZZY TEMPERATURE MODULE)
 -- ==============================================================
-
--- BƯỚC 1: Thêm các Triệu chứng (Symptoms) mới vào Database
--- Để giao diện hiện ra các ô checkbox trong danh mục Cooling và Performance
 INSERT INTO rules (conditions, conclusion, solution) VALUES
 ('Cooling, Quạt kêu to (Loud fan noise)', 'Quạt tản nhiệt hoạt động tối đa', 'Kiểm tra xem hệ thống có đang quá tải nhiệt không.'),
 ('Cooling, Máy tự tắt đột ngột (Random Shutdown)', 'Hệ thống tự tắt đột ngột', 'Dấu hiệu của việc sụt nguồn hoặc quá nhiệt nghiêm trọng.'),
 ('Performance, Máy chạy chậm dần (Lagging)', 'Hệ thống phản hồi chậm', 'Kiểm tra tài nguyên CPU/RAM hoặc hệ thống tản nhiệt.');
 
--- BƯỚC 2: Thêm "Luật Độc Lập" (Standalone Rules) cho Nhiệt độ
--- Xử lý trường hợp chỉ kéo thanh nhiệt độ mà không tích checkbox
 INSERT INTO rules (conditions, conclusion, solution) VALUES
 ('Temp_Danger', 'Hệ thống đang quá nhiệt ở mức Đe dọa phần cứng', 'Lập tức lưu dữ liệu và tắt máy. Kiểm tra lại toàn bộ hệ thống tản nhiệt ngay khi máy nguội.'),
 ('Temp_Warning', 'Hệ thống đang hoạt động ở mức nhiệt độ Cảnh báo', 'Theo dõi sát sao. Nếu không chạy tác vụ nặng (Game/Render) mà vẫn đạt mức này, hãy lên lịch vệ sinh máy.');
 
--- BƯỚC 3: Thêm "Luật Liên Hợp" (Combined Rules)
--- Kết hợp nhãn Fuzzy Temperature và Triệu chứng thực tế
 INSERT INTO rules (conditions, conclusion, solution) VALUES
 ('Temp_Danger, Quạt kêu to (Loud fan noise)', 
  'Quá nhiệt nghiêm trọng dẫn đến hạ xung (Thermal Throttling)', 
  'Vệ sinh toàn bộ hệ thống tản nhiệt, tra lại keo tản nhiệt chất lượng cao.'),
 
 ('Temp_Danger, Máy tự tắt đột ngột (Random Shutdown)', 
- 'Bo mạch chủ kích hoạt cơ chế ngắt điện tự vệ do chạm ngưỡng Tjunction Max', 
+ 'Bo mạch chủ kích hoạt ngắt điện tự vệ do chạm ngưỡng Tjunction Max', 
  'Tuyệt đối không bật lại máy. Kiểm tra ngay tình trạng bơm tản nhiệt hoặc quạt CPU.'),
 
 ('Temp_Warning, Máy chạy chậm dần (Lagging)', 
@@ -245,7 +225,6 @@ INSERT INTO rules (conditions, conclusion, solution) VALUES
 
 -- ==============================================================
 -- [MODULE] LUẬT LIÊN HỢP ĐA BIẾN (BEEP + NHIỆT ĐỘ + TRIỆU CHỨNG)
--- Thể hiện sức mạnh của Forward Chaining kết hợp Fuzzy Logic
 -- ==============================================================
 INSERT INTO rules (conditions, conclusion, solution) VALUES
 ('continuous, Temp_Danger', 
@@ -256,8 +235,6 @@ INSERT INTO rules (conditions, conclusion, solution) VALUES
  'Nguồn điện (PSU) hoạt động quá mức hoặc sắp hỏng do quá nhiệt', 
  'Tiếng bíp rất dài kèm tiếng quạt hú to cho thấy Nguồn máy tính (Power Supply) đang gặp trục trặc dòng điện. Tắt máy và thay thế Nguồn công suất thực cao hơn.'),
 
-('8 beeps, Startup, No Live Screen But System is On', 
+('8 beeps, Startup, Máy lên nguồn nhưng không xuất hình', 
  'VGA Card (Card màn hình rời) bị lỗi Video RAM', 
  '8 tiếng bíp là mã lỗi đặc trưng của VRAM. Kết hợp với việc máy lên nguồn nhưng không xuất hình, 100% card màn hình của bạn đã hỏng. Cần thay thế card mới hoặc tháo card rời để cắm thẳng dây màn hình vào Mainboard (dùng iGPU).');
-
-

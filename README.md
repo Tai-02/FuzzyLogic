@@ -20,42 +20,31 @@ Hệ thống có 2 khả năng chẩn đoán chính:
 
 ## 🚀 Hướng dẫn chạy đồ án (Dành cho người kiểm thử)
 
-Hệ thống được thiết kế theo kiến trúc **Agent-Client**. Máy chủ Web/DB chạy trong Docker, còn Cảm biến (Hardware Agent) chạy để thu thập dữ liệu. Có 2 cách chạy tùy thuộc vào nhu cầu báo cáo của bạn:
+Hệ thống được thiết kế theo kiến trúc **Agent-Client**. Để trải nghiệm đầy đủ, bạn chỉ cần làm theo 2 bước sau:
 
-### 🌟 Kịch bản 1: Chỉ trải nghiệm Giao diện & Logic mờ (Dễ nhất)
-*Phù hợp nếu bạn chỉ muốn xem giao diện, kéo các thanh trượt (sliders) giả lập thông số để xem thuật toán suy luận mờ hoạt động ra sao.*
-
+### Bước 1: Khởi động Server (Web & Database)
 1. Cài đặt Docker Desktop.
-2. Mở Terminal (PowerShell) tại thư mục chứa code và chạy lệnh:
+2. Mở Terminal tại thư mục code và chạy lệnh:
    ```powershell
    docker-compose up -d
    ```
-3. Chờ khởi động xong, truy cập: **`http://localhost:5000`**.
-*(Lưu ý: Chạy kiểu này hệ thống sẽ tự dùng Agent ảo trong Docker. Chức năng [Ghi âm Mic] sẽ bị lỗi vì Docker không có quyền truy cập Microphone của máy tính thật).*
+3. Truy cập Web tại: **`http://localhost:5000`**
 
-### 🔥 Kịch bản 2: Báo cáo tính năng Ghi âm & Đo cấu hình thật (Dành cho Demo Hội đồng)
-*Bắt buộc phải chạy Local Agent trên Windows để hệ thống có quyền truy cập vào Microphone và lấy chính xác phần trăm CPU/RAM của máy thật.*
-
-1. Vẫn giữ Docker chạy bằng lệnh `docker-compose up -d` (Để chạy Web và Database).
-2. Mở một cửa sổ Terminal (PowerShell) **MỚI**.
-3. Cài đặt thư viện Python (Chỉ cần làm lần đầu):
-   ```powershell
-   pip install flask flask-cors psutil sounddevice numpy scipy
-   ```
-4. Chạy Agent thu thập dữ liệu phần cứng:
-   ```powershell
-   python hardware_agent.py
-   ```
-*(Kệ thông báo Warning đỏ của Flask, cứ để cửa sổ đó chạy ngầm. Bây giờ bạn truy cập Web và bấm nút [🎙 GHI ÂM] thoải mái!)*
-
-### Bước 3: Trải nghiệm Hệ thống
-1. Mở trình duyệt web và truy cập: **`http://localhost:5000`**
-2. **Thử nghiệm Ghi âm (Acoustic):** Ở trang chủ, cuộn xuống phần Tiếng Bíp hoặc Tiếng Quạt. Chọn tab **GHI ÂM (MIC)** và nhấn nút. Hệ thống sẽ thu âm 3 giây từ máy bạn và chẩn đoán!
-3. **Thử nghiệm Hardware Scan:** Bấm vào chữ **🖥 HARDWARE SCAN** trên thanh menu. Nếu chữ `AGENT ONLINE` hiện màu xanh, hệ thống đang lấy số liệu thật từ máy bạn.
+### Bước 2: Khởi động Cảm biến (Ghi âm & Nhiệt độ thật)
+Để sử dụng được nút **[🎙 Ghi âm]** và đo được **Nhiệt độ thật**, bạn cần chạy Agent trên Windows:
+1. Nhấn đúp chuột (Double-click) vào file **`CHAY_NHANH.bat`** trong thư mục.
+2. Hệ thống sẽ tự động hoạt động ở 2 chế độ:
+   - **Chế độ Real-time:** Nếu bạn mở **LibreHardwareMonitor** (quyền Admin), Agent sẽ lấy nhiệt độ CPU thật qua giao thức WMI.
+   - **Chế độ Simulation:** Nếu không mở phần mềm bổ trợ, Agent sẽ tự động nội suy nhiệt độ dựa trên tải (load) của CPU để đảm bảo dữ liệu Demo luôn sống động.
+3. Quay lại trình duyệt và tận hưởng giao diện chẩn đoán Cyberpunk!
 
 ---
 
-## ⚙️ Trạm Quản Trị & Bảo Mật (Admin & Security)
+## 🛠️ Kiến trúc Kỹ thuật (Technical Architecture)
+Hệ thống này tích hợp các kỹ thuật tiên tiến để tối ưu cho việc chẩn đoán:
+- **Acoustic Diagnostic:** Sử dụng Fast Fourier Transform (FFT) và tính toán RMS để phân tích âm thanh tiếng bíp BIOS và tiếng quạt.
+- **Fuzzy Inference Engine:** Xử lý các giá trị mờ (Low, Normal, Danger) thay vì các con số cứng nhắc.
+- **Dual-Mode Thermal Sensing:** Khả năng giao tiếp với tầng Kernel của Windows thông qua WMI (Windows Management Instrumentation) và Namespace `root\LibreHardwareMonitor`.
 
 Để thêm hoặc sửa các luật (Rules) của hệ chuyên gia:
 - **Đường dẫn truy cập:** `http://localhost:5000/admin`
