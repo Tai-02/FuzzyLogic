@@ -182,6 +182,80 @@
                     </div>
                 {% endif %}
 
+                <!-- ENGINE 03: FUZZY FAN NOISE -->
+                <div class="panel-sub-label mt-4">▸ CỘT CƠ SỞ 03: PHÂN TÍCH TIẾNG QUẠT (FAN NOISE)</div>
+
+                {% if fan and fan.linguistic_label %}
+                    {% set f_sev = fan.severity %}
+                    <div class="cyber-result-card" style="border-color: var(--cyber-cyan-dim); margin-bottom: 16px;">
+                        <div class="result-card-header" style="border-bottom-color: var(--cyber-cyan-dim);">
+                            <span class="r-icon">📊</span>
+                            <span class="r-conclusion">FUZZIFICATION — BẢNG ĐỘ THUỘC TẬP MỜ (μ) [QUẠT]</span>
+                        </div>
+                        <div class="result-card-body">
+                            <div class="r-detail" style="margin-bottom: 14px;">
+                                <span class="d-label">GIÁ TRỊ RMS (CRISP INPUT):</span>
+                                <span class="d-content highlight" style="font-size: 1.1rem;">{{ "%.4f"|format(fan.rms) }}</span>
+                            </div>
+                            <table class="fuzzy-table">
+                                <thead>
+                                    <tr style="border-bottom: 1px solid var(--cyber-border);">
+                                        <th class="fuzzy-th-1">TẬP MỜ</th>
+                                        <th class="fuzzy-th-2">μ</th>
+                                        <th class="fuzzy-th-3">BIỂU ĐỒ</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for label, mu in fan.memberships.items() %}
+                                    {% set is_winner = (label == fan.linguistic_label) %}
+                                    <tr class="fuzzy-row {% if is_winner %}winner{% endif %}">
+                                        <td class="fuzzy-td-1 {% if is_winner %}winner{% endif %}">
+                                            {{ label }}{% if is_winner %} ◀ MAX{% endif %}
+                                        </td>
+                                        <td class="fuzzy-td-2 {% if is_winner %}winner{% endif %}">
+                                            {{ "%.4f"|format(mu) }}
+                                        </td>
+                                        <td class="fuzzy-td-3">
+                                            <div class="fuzzy-bar-wrap">
+                                                {% set bar_style = 'style="width:' ~ ((mu * 100)|round(1)) ~ '%;"' %}
+                                                <div class="fuzzy-bar-fill {% if is_winner %}winner{% endif %}" {{ bar_style | safe }}></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            <div style="margin-top:14px; padding:10px 14px; background:rgba(0,255,136,0.06); border:1px solid var(--cyber-green-dim, #00cc6a); border-radius:3px; font-size:0.8rem;">
+                                <span style="color:var(--cyber-green); font-weight:700;">DEFUZZIFICATION (MAX):</span>
+                                <span style="color:var(--cyber-text);"> Tập mờ "<strong style="color:var(--cyber-green);">{{ fan.linguistic_label }}</strong>" được chọn (μ cao nhất)</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- KẾT QUẢ CHẨN ĐOÁN FUZZY QUẠT -->
+                    <div class="cyber-result-card beep-result sev-{{ f_sev }}" data-diagnosis="{{ fan.diagnosis }}">
+                        <div class="result-card-header">
+                            <span class="r-icon">🌀</span>
+                            <span class="r-conclusion">Tiếng quạt: "{{ fan.linguistic_label }}"</span>
+                            <span class="cyber-badge-sev ms-auto {{ f_sev }}">{{ f_sev|upper }}</span>
+                        </div>
+                        <div class="result-card-body">
+                            <div class="r-detail">
+                                <span class="d-label">KẾT LUẬN CHẨN ĐOÁN:</span>
+                                <span class="d-content highlight">{{ fan.diagnosis }}</span>
+                            </div>
+                            <div class="r-solution-box">
+                                <div class="s-header">✅ QUY TRÌNH XỬ LÝ (ACTION_PLAN):</div>
+                                <div class="s-content">{{ fan.solution }}</div>
+                            </div>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="cyber-no-results">
+                        <div class="no-res-msg">[!] KHÔNG CÓ THÔNG TIN ÂM THANH QUẠT</div>
+                    </div>
+                {% endif %}
+
                 <div class="text-center mt-4 pt-2">
                     <a href="/" class="cyber-btn-outline">[ 🔄 CHẨN ĐOÁN LẠI ]</a>
                 </div>

@@ -4,7 +4,12 @@ import mysql.connector
 import os
 from functools import wraps
 
-from fuzzy import fuzzy_beep_from_crisp, fuzzy_beep_from_count, FuzzyTemperature
+from fuzzy import (
+    fuzzy_beep_from_crisp, fuzzy_beep_from_count, FuzzyTemperature,
+    fuzzify_cpu_usage, fuzzify_ram_usage, fuzzify_disk_usage,
+    defuzzify_max, analyze_fan_noise_from_slider,
+    CPU_RULES, RAM_RULES, DISK_RULES, TEMP_RULES, FAN_RULES
+)
 
 app = Flask(__name__)
 app.secret_key = os.getenv("SECRET_KEY", "expert-sys-secret-2025")
@@ -75,28 +80,31 @@ def index():
         selected_symptoms = request.form.getlist("symptoms")
         beep_mode = request.form.get("beep_mode", "").strip()
 
-        # --- [THÊM MỚI] Chẩn đoán nhiệt độ bằng FuzzyTemperature ---
-        # Trích xuất tham số từ form (name="pc_type" và name="temperature")
-        pc_type  = request.form.get("pc_type", "office").strip()
-        temp_raw = request.form.get("temperature", "").strip()
-        if temp_raw:
-            try:
-                temp_value   = float(temp_raw)
-                fuzzy_temp   = FuzzyTemperature(pc_type)
-                temp_label   = fuzzy_temp.diagnose(temp_value)
-                # Nối nhãn ngôn ngữ vào working memory trước khi suy diễn tiến
-                # VD: "Temp_Danger" → kích hoạt các luật nhiệt độ trong DB
-                selected_symptoms.append(temp_label)
-            except ValueError:
-                pass  # Bỏ qua nếu giá trị không hợp lệ
 
-        rule_results = forward_chaining(selected_symptoms)
+
+        # Fuzzification tiếng quạt (fan noise) — đo bằng microphone hoặc slider
+        # Nguồn: Oppenheim & Schafer (2009) DSP Ch.8 + Bai & Wang (2006) Springer
+        fan_raw = request.form.get("fan_score", "").strip()
+        fan_result = None
+        if fan_raw:
+            try:
+                fan_value  = float(fan_raw)
+                fan_result = analyze_fan_noise_from_slider(fan_value)
+                fan_label  = fan_result["linguistic_label"]
+                # Thêm nhãn mờ vào Working Memory — VD: "loud" hoặc "grinding"
+                selected_symptoms.append(fan_label)
+            except ValueError:
+                pass
 
         beep_result = None
+        beep_label_for_chaining = None
+
         if beep_mode == "duration":
             raw = request.form.get("beep_duration", "").strip()
             if raw:
                 beep_result = fuzzy_beep_from_crisp(float(raw))
+                if beep_result and "linguistic_label" in beep_result:
+                    beep_label_for_chaining = beep_result["linguistic_label"]
         elif beep_mode == "count":
             raw = request.form.get("beep_count", "").strip()
             count_map = {
@@ -106,6 +114,14 @@ def index():
             }
             if raw and raw in count_map:
                 beep_result = fuzzy_beep_from_count(count_map[raw])
+                if beep_result and "linguistic_label" in beep_result:
+                    beep_label_for_chaining = beep_result["linguistic_label"]
+
+
+        if beep_label_for_chaining:
+            selected_symptoms.append(beep_label_for_chaining)
+
+        rule_results = forward_chaining(selected_symptoms)
 
         if not beep_result:
             beep_result = {
@@ -118,7 +134,7 @@ def index():
                 "crisp_input": None,
             }
 
-        return render_template("result.html", results=rule_results, beep=beep_result, selected_symptoms=selected_symptoms)
+        return render_template("result.html", results=rule_results, beep=beep_result, fan=fan_result, selected_symptoms=selected_symptoms)
 
     cursor.execute("SELECT conditions FROM rules")
     rows = cursor.fetchall()
@@ -205,6 +221,98 @@ def admin():
     cursor.close()
     conn.close()
     return render_template("admin.html", rules=rules_list)
+
+
+@app.route("/hardware-scan", methods=["GET", "POST"])
+def hardware_scan():
+    """
+    Route mới: Chẩn đoán khi màn hình còn bật.
+    Gọi Hardware Agent ở localhost:5001 để lấy dữ liệu thật.
+    Fallback: hiển thị form để người dùng nhập tay bằng slider.
+    """
+    # Lấy URL của agent từ biến môi trường (Docker dùng 'http://agent:5001')
+    AGENT_URL = os.getenv("HARDWARE_AGENT_URL", "http://localhost:5001")
+    agent_data = None
+    agent_error = None
+
+    try:
+        import requests as req
+        response = req.get(f"{AGENT_URL}/hardware", timeout=2)
+        agent_data = response.json()
+    except Exception as e:
+        agent_error = "Chưa kết nối Hardware Agent. Vui lòng chạy EXPERT-SYS-Agent.exe"
+
+    if request.method == "POST":
+        # Lấy dữ liệu từ form hoặc agent
+        cpu     = float(request.form.get("cpu_percent", 0))
+        ram     = float(request.form.get("ram_percent", 0))
+        disk    = float(request.form.get("disk_percent", 0))
+        temp    = request.form.get("cpu_temp", "").strip()
+        pc_type = request.form.get("pc_type", "office")
+        fan_score_raw = request.form.get("fan_score", "").strip()
+
+        results = {}
+
+        # CPU
+        cpu_m = fuzzify_cpu_usage(cpu)
+        cpu_label = defuzzify_max(cpu_m)
+        results["cpu"] = {
+            "value": cpu, "memberships": cpu_m,
+            "label": cpu_label, **CPU_RULES[cpu_label]
+        }
+
+        # RAM
+        ram_m = fuzzify_ram_usage(ram)
+        ram_label = defuzzify_max(ram_m)
+        results["ram"] = {
+            "value": ram, "memberships": ram_m,
+            "label": ram_label, **RAM_RULES[ram_label]
+        }
+
+        # Disk
+        disk_m = fuzzify_disk_usage(disk)
+        disk_label = defuzzify_max(disk_m)
+        results["disk"] = {
+            "value": disk, "memberships": disk_m,
+            "label": disk_label, **DISK_RULES[disk_label]
+        }
+
+        # Nhiệt độ (nếu có)
+        if temp:
+            try:
+                ft = FuzzyTemperature(pc_type)
+                temp_val = float(temp)
+                temp_m = ft.fuzzify(temp_val)
+                temp_label = ft.diagnose(temp_val)
+                results["temperature"] = {
+                    "value": temp_val, "memberships": temp_m,
+                    "label": temp_label, **TEMP_RULES[temp_label]
+                }
+            except (ValueError, KeyError):
+                pass
+
+        # Fan noise (slider fallback)
+        if fan_score_raw:
+            try:
+                fan_result = analyze_fan_noise_from_slider(float(fan_score_raw))
+                results["fan"] = {
+                    "value": float(fan_score_raw),
+                    "memberships": fan_result["memberships"],
+                    "label": fan_result["linguistic_label"],
+                    "diagnosis": fan_result["diagnosis"],
+                    "solution": fan_result["solution"],
+                    "severity": fan_result["severity"]
+                }
+            except (ValueError, KeyError):
+                pass
+
+        return render_template("hardware_result.html",
+                               results=results,
+                               agent_data=agent_data)
+
+    return render_template("hardware_scan.html",
+                           agent_data=agent_data,
+                           agent_error=agent_error)
 
 
 if __name__ == "__main__":

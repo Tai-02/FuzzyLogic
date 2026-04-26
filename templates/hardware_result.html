@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expert PC Troubleshooter // KẾT QUẢ HARDWARE SCAN</title>
+    <meta name="description" content="Kết quả chẩn đoán phần cứng bằng Fuzzy Logic — CPU, RAM, Disk, Temperature, Fan.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Chakra+Petch:wght@400;600;700&family=Be+Vietnam+Pro:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .hw-sev-color-normal {
+            color: #00ff88;
+        }
+
+        .hw-sev-color-warning {
+            color: #ffcc00;
+        }
+
+        .hw-sev-color-critical {
+            color: #ff5555;
+        }
+
+        .hw-sev-color-error {
+            color: #ff5555;
+        }
+
+        .hw-result-section {
+            margin-bottom: 24px;
+        }
+
+        .hw-result-card {
+            background: rgba(0, 10, 20, 0.7);
+            border: 1px solid var(--cyber-border, #1a3a5c);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .hw-result-card.sev-normal {
+            border-left: 3px solid #00ff88;
+        }
+
+        .hw-result-card.sev-warning {
+            border-left: 3px solid #ffcc00;
+        }
+
+        .hw-result-card.sev-critical {
+            border-left: 3px solid #ff4444;
+        }
+
+        .hw-result-card.sev-error {
+            border-left: 3px solid #ff4444;
+        }
+
+        .hw-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            font-family: var(--cyber-font-mono, 'Share Tech Mono', monospace);
+        }
+
+        .hw-card-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            color: var(--cyber-text, #e0e0e0);
+        }
+
+        .hw-sev-badge {
+            padding: 3px 10px;
+            border-radius: 3px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            font-family: var(--cyber-font-mono);
+        }
+
+        .hw-sev-badge.normal {
+            background: rgba(0, 255, 136, 0.15);
+            color: #00ff88;
+        }
+
+        .hw-sev-badge.warning {
+            background: rgba(255, 204, 0, 0.15);
+            color: #ffcc00;
+        }
+
+        .hw-sev-badge.critical {
+            background: rgba(255, 60, 60, 0.15);
+            color: #ff5555;
+        }
+
+        .hw-sev-badge.error {
+            background: rgba(255, 60, 60, 0.15);
+            color: #ff5555;
+        }
+
+        .hw-card-body {
+            padding: 14px 16px;
+        }
+
+        .hw-val-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 10px;
+            font-family: var(--cyber-font-mono);
+            font-size: 0.82rem;
+        }
+
+        .hw-val-big {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--cyber-accent, #00ccff);
+            text-shadow: 0 0 10px rgba(0, 204, 255, 0.3);
+        }
+
+        .hw-val-arrow {
+            color: var(--cyber-cyan-dim, #4ecdc4);
+        }
+
+        .hw-val-label {
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 3px;
+        }
+
+        .hw-val-label.normal {
+            background: rgba(0, 255, 136, 0.12);
+            color: #00ff88;
+        }
+
+        .hw-val-label.warning {
+            background: rgba(255, 204, 0, 0.12);
+            color: #ffcc00;
+        }
+
+        .hw-val-label.critical {
+            background: rgba(255, 60, 60, 0.12);
+            color: #ff5555;
+        }
+
+        .hw-val-label.error {
+            background: rgba(255, 60, 60, 0.12);
+            color: #ff5555;
+        }
+
+        .hw-diag-text {
+            color: var(--cyber-text, #e0e0e0);
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .hw-solution-box {
+            background: rgba(0, 255, 136, 0.04);
+            border: 1px solid rgba(0, 255, 136, 0.15);
+            border-radius: 3px;
+            padding: 10px 14px;
+            font-size: 0.8rem;
+            line-height: 1.7;
+            color: var(--cyber-text-dim, #b0b0b0);
+            white-space: pre-line;
+        }
+
+        .hw-solution-box.warning {
+            background: rgba(255, 204, 0, 0.04);
+            border-color: rgba(255, 204, 0, 0.2);
+        }
+
+        .hw-solution-box.critical {
+            background: rgba(255, 60, 60, 0.04);
+            border-color: rgba(255, 60, 60, 0.2);
+        }
+
+        .hw-solution-box.error {
+            background: rgba(255, 60, 60, 0.04);
+            border-color: rgba(255, 60, 60, 0.2);
+        }
+
+        /* Fuzzification table */
+        .hw-fuzzy-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: var(--cyber-font-mono);
+            margin-top: 10px;
+        }
+
+        .hw-fuzzy-table th {
+            text-align: left;
+            padding: 6px 10px;
+            color: var(--cyber-cyan-dim);
+            font-size: 0.65rem;
+            letter-spacing: 2px;
+            border-bottom: 1px solid var(--cyber-border);
+        }
+
+        .hw-fuzzy-table td {
+            padding: 5px 10px;
+            font-size: 0.78rem;
+            color: var(--cyber-text-dim);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .hw-fuzzy-table tr.winner td {
+            color: var(--cyber-green, #00ff88);
+            font-weight: 700;
+        }
+
+        .hw-fuzzy-bar-wrap {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--cyber-border);
+            border-radius: 2px;
+            height: 14px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hw-fuzzy-bar-fill {
+            height: 100%;
+            background: var(--cyber-cyan-dim);
+            transition: width 0.3s;
+        }
+
+        .hw-fuzzy-bar-fill.winner {
+            background: var(--cyber-green);
+            box-shadow: 0 0 8px rgba(0, 255, 136, 0.5);
+        }
+
+        .hw-overall-box {
+            background: rgba(0, 20, 40, 0.6);
+            border: 1px solid var(--cyber-border);
+            border-radius: 4px;
+            padding: 18px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .hw-overall-title {
+            font-family: var(--cyber-font-mono);
+            font-size: 0.7rem;
+            letter-spacing: 3px;
+            color: var(--cyber-cyan-dim);
+            margin-bottom: 10px;
+        }
+
+        .hw-overall-status {
+            font-family: 'Chakra Petch', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .hw-overall-status.normal {
+            color: #00ff88;
+            text-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+        }
+
+        .hw-overall-status.warning {
+            color: #ffcc00;
+            text-shadow: 0 0 20px rgba(255, 204, 0, 0.4);
+        }
+
+        .hw-overall-status.critical {
+            color: #ff4444;
+            text-shadow: 0 0 20px rgba(255, 60, 60, 0.4);
+            animation: pulse-red 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse-red {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
+        }
+    </style>
+</head>
+
+<body class="cyber-body">
+
+    <div class="scanline-overlay" aria-hidden="true"></div>
+
+    <header class="cyber-header" role="banner">
+        <div class="cyber-header-inner">
+            <div class="cyber-logo">
+                <span class="logo-bracket">[</span>
+                <span class="logo-text">EXPERT-SYS</span>
+                <span class="logo-bracket">]</span>
+                <span class="logo-sub">// HARDWARE_DIAGNOSTIC_REPORT</span>
+            </div>
+            <div class="cyber-status-bar">
+                <span class="status-dot blink-green"></span>
+                <span class="status-text">PHÂN TÍCH HOÀN TẤT</span>
+                <span class="status-sep">|</span>
+                <a href="/hardware-scan" class="cyber-admin-link">[ ◂ QUÉT LẠI ]</a>
+                <span class="status-sep">|</span>
+                <a href="/" class="cyber-admin-link">[ ◂ BIOS SCAN ]</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="cyber-main">
+        <div class="cyber-grid">
+
+            <!-- LEFT: RESULTS -->
+            <section class="panel-left" aria-label="Hardware Diagnostic Results">
+
+                <div class="panel-section-label">
+                    <span class="label-line"></span>
+                    <span class="label-text">// KẾT QUẢ CHẨN ĐOÁN PHẦN CỨNG //</span>
+                    <span class="label-line"></span>
+                </div>
+
+                <!-- Overall Health -->
+                {% set sev_order = {'normal': 0, 'warning': 1, 'error': 2, 'critical': 3} %}
+                {% set ns = namespace(worst_sev='normal', critical_count=0, warning_count=0) %}
+                {% for key, data in results.items() %}
+                {% if sev_order.get(data.severity, 0) > sev_order.get(ns.worst_sev, 0) %}
+                {% set ns.worst_sev = data.severity %}
+                {% endif %}
+                {% if data.severity == 'critical' or data.severity == 'error' %}
+                {% set ns.critical_count = ns.critical_count + 1 %}
+                {% elif data.severity == 'warning' %}
+                {% set ns.warning_count = ns.warning_count + 1 %}
+                {% endif %}
+                {% endfor %}
+
+                <div class="hw-overall-box">
+                    <div class="hw-overall-title">OVERALL SYSTEM HEALTH</div>
+                    {% if ns.worst_sev == 'critical' or ns.worst_sev == 'error' %}
+                    <div class="hw-overall-status critical">⚠ PHÁT HIỆN VẤN ĐỀ NGHIÊM TRỌNG</div>
+                    {% elif ns.worst_sev == 'warning' %}
+                    <div class="hw-overall-status warning">⚡ CÓ CẢNH BÁO — CẦN CHÚ Ý</div>
+                    {% else %}
+                    <div class="hw-overall-status normal">✔ HỆ THỐNG HOẠT ĐỘNG ỔN ĐỊNH</div>
+                    {% endif %}
+                    <div
+                        style="margin-top:8px; font-family:var(--cyber-font-mono); font-size:0.75rem; color:var(--cyber-text-dim);">
+                        {{ results|length }} module đã quét |
+                        {% if ns.critical_count %}{{ ns.critical_count }} critical{% endif %}
+                        {% if ns.warning_count %}{% if ns.critical_count %} | {% endif %}{{ ns.warning_count }}
+                        warning{% endif %}
+                        {% if not ns.critical_count and not ns.warning_count %}Tất cả bình thường{% endif %}
+                    </div>
+                </div>
+
+                <!-- CPU Result -->
+                {% if results.cpu %}
+                {% set d = results.cpu %}
+                <div class="hw-result-card sev-{{ d.severity }}">
+                    <div class="hw-card-header">
+                        <span class="hw-card-title">◈ CPU USAGE</span>
+                        <span class="hw-sev-badge {{ d.severity }}">{{ d.severity|upper }}</span>
+                    </div>
+                    <div class="hw-card-body">
+                        <div class="hw-val-row">
+                            <span class="hw-val-big">{{ d.value }}%</span>
+                            <span class="hw-val-arrow">→</span>
+                            <span class="hw-val-label {{ d.severity }}">{{ d.label|upper }}</span>
+                        </div>
+                        <div class="hw-diag-text">{{ d.diagnosis }}</div>
+                        <div class="hw-solution-box {{ d.severity }}">{{ d.solution }}</div>
+                        <!-- Fuzzification Table -->
+                        <table class="hw-fuzzy-table">
+                            <thead>
+                                <tr>
+                                    <th>TẬP MỜ</th>
+                                    <th>μ</th>
+                                    <th>BIỂU ĐỒ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lbl, mu in d.memberships.items() %}
+                                <tr {% if lbl==d.label %}class="winner" {% endif %}>
+                                    <td>{{ lbl }}{% if lbl == d.label %} ◀{% endif %}</td>
+                                    <td>{{ "%.4f"|format(mu) }}</td>
+                                    <td>
+                                        <div class="hw-fuzzy-bar-wrap">
+                                            {% set bar_style = 'style="width:' ~ ((mu*100)|round(1)) ~ '%;"' %}
+                                            <div class="hw-fuzzy-bar-fill {% if lbl == d.label %}winner{% endif %}"
+                                                {{ bar_style | safe }}></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- RAM Result -->
+                {% if results.ram %}
+                {% set d = results.ram %}
+                <div class="hw-result-card sev-{{ d.severity }}">
+                    <div class="hw-card-header">
+                        <span class="hw-card-title">◈ RAM USAGE</span>
+                        <span class="hw-sev-badge {{ d.severity }}">{{ d.severity|upper }}</span>
+                    </div>
+                    <div class="hw-card-body">
+                        <div class="hw-val-row">
+                            <span class="hw-val-big">{{ d.value }}%</span>
+                            <span class="hw-val-arrow">→</span>
+                            <span class="hw-val-label {{ d.severity }}">{{ d.label|upper }}</span>
+                        </div>
+                        <div class="hw-diag-text">{{ d.diagnosis }}</div>
+                        <div class="hw-solution-box {{ d.severity }}">{{ d.solution }}</div>
+                        <table class="hw-fuzzy-table">
+                            <thead>
+                                <tr>
+                                    <th>TẬP MỜ</th>
+                                    <th>μ</th>
+                                    <th>BIỂU ĐỒ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lbl, mu in d.memberships.items() %}
+                                <tr {% if lbl==d.label %}class="winner" {% endif %}>
+                                    <td>{{ lbl }}{% if lbl == d.label %} ◀{% endif %}</td>
+                                    <td>{{ "%.4f"|format(mu) }}</td>
+                                    <td>
+                                        <div class="hw-fuzzy-bar-wrap">
+                                            {% set bar_style = 'style="width:' ~ ((mu*100)|round(1)) ~ '%;"' %}
+                                            <div class="hw-fuzzy-bar-fill {% if lbl == d.label %}winner{% endif %}"
+                                                {{ bar_style | safe }}></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Disk Result -->
+                {% if results.disk %}
+                {% set d = results.disk %}
+                <div class="hw-result-card sev-{{ d.severity }}">
+                    <div class="hw-card-header">
+                        <span class="hw-card-title">▣ DISK USAGE</span>
+                        <span class="hw-sev-badge {{ d.severity }}">{{ d.severity|upper }}</span>
+                    </div>
+                    <div class="hw-card-body">
+                        <div class="hw-val-row">
+                            <span class="hw-val-big">{{ d.value }}%</span>
+                            <span class="hw-val-arrow">→</span>
+                            <span class="hw-val-label {{ d.severity }}">{{ d.label|upper }}</span>
+                        </div>
+                        <div class="hw-diag-text">{{ d.diagnosis }}</div>
+                        <div class="hw-solution-box {{ d.severity }}">{{ d.solution }}</div>
+                        <table class="hw-fuzzy-table">
+                            <thead>
+                                <tr>
+                                    <th>TẬP MỜ</th>
+                                    <th>μ</th>
+                                    <th>BIỂU ĐỒ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lbl, mu in d.memberships.items() %}
+                                <tr {% if lbl==d.label %}class="winner" {% endif %}>
+                                    <td>{{ lbl }}{% if lbl == d.label %} ◀{% endif %}</td>
+                                    <td>{{ "%.4f"|format(mu) }}</td>
+                                    <td>
+                                        <div class="hw-fuzzy-bar-wrap">
+                                            {% set bar_style = 'style="width:' ~ ((mu*100)|round(1)) ~ '%;"' %}
+                                            <div class="hw-fuzzy-bar-fill {% if lbl == d.label %}winner{% endif %}"
+                                                {{ bar_style | safe }}></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Temperature Result -->
+                {% if results.temperature %}
+                {% set d = results.temperature %}
+                <div class="hw-result-card sev-{{ d.severity }}">
+                    <div class="hw-card-header">
+                        <span class="hw-card-title">🌡 CPU TEMPERATURE</span>
+                        <span class="hw-sev-badge {{ d.severity }}">{{ d.severity|upper }}</span>
+                    </div>
+                    <div class="hw-card-body">
+                        <div class="hw-val-row">
+                            <span class="hw-val-big">{{ d.value }}°C</span>
+                            <span class="hw-val-arrow">→</span>
+                            <span class="hw-val-label {{ d.severity }}">{{ d.label }}</span>
+                        </div>
+                        <div class="hw-diag-text">{{ d.diagnosis }}</div>
+                        <div class="hw-solution-box {{ d.severity }}">{{ d.solution }}</div>
+                        <table class="hw-fuzzy-table">
+                            <thead>
+                                <tr>
+                                    <th>TẬP MỜ</th>
+                                    <th>μ</th>
+                                    <th>BIỂU ĐỒ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lbl, mu in d.memberships.items() %}
+                                <tr {% if lbl==d.label %}class="winner" {% endif %}>
+                                    <td>{{ lbl }}{% if lbl == d.label %} ◀{% endif %}</td>
+                                    <td>{{ "%.4f"|format(mu) }}</td>
+                                    <td>
+                                        <div class="hw-fuzzy-bar-wrap">
+                                            {% set bar_style = 'style="width:' ~ ((mu*100)|round(1)) ~ '%;"' %}
+                                            <div class="hw-fuzzy-bar-fill {% if lbl == d.label %}winner{% endif %}"
+                                                {{ bar_style | safe }}></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Fan Result -->
+                {% if results.fan %}
+                {% set d = results.fan %}
+                <div class="hw-result-card sev-{{ d.severity }}">
+                    <div class="hw-card-header">
+                        <span class="hw-card-title">🌀 FAN NOISE ANALYSIS</span>
+                        <span class="hw-sev-badge {{ d.severity }}">{{ d.severity|upper }}</span>
+                    </div>
+                    <div class="hw-card-body">
+                        <div class="hw-val-row">
+                            <span class="hw-val-big">RMS {{ d.value }}</span>
+                            <span class="hw-val-arrow">→</span>
+                            <span class="hw-val-label {{ d.severity }}">{{ d.label|upper }}</span>
+                        </div>
+                        <div class="hw-diag-text">{{ d.diagnosis }}</div>
+                        <div class="hw-solution-box {{ d.severity }}">{{ d.solution }}</div>
+                        <table class="hw-fuzzy-table">
+                            <thead>
+                                <tr>
+                                    <th>TẬP MỜ</th>
+                                    <th>μ</th>
+                                    <th>BIỂU ĐỒ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for lbl, mu in d.memberships.items() %}
+                                <tr {% if lbl==d.label %}class="winner" {% endif %}>
+                                    <td>{{ lbl }}{% if lbl == d.label %} ◀{% endif %}</td>
+                                    <td>{{ "%.4f"|format(mu) }}</td>
+                                    <td>
+                                        <div class="hw-fuzzy-bar-wrap">
+                                            {% set bar_style = 'style="width:' ~ ((mu*100)|round(1)) ~ '%;"' %}
+                                            <div class="hw-fuzzy-bar-fill {% if lbl == d.label %}winner{% endif %}"
+                                                {{ bar_style | safe }}></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {% endif %}
+
+                <div class="text-center mt-4 pt-2" style="display:flex; gap:12px; justify-content:center;">
+                    <a href="/hardware-scan" class="cyber-btn-outline">[ 🔄 QUÉT LẠI ]</a>
+                    <a href="/" class="cyber-btn-outline">[ ◂ BIOS DIAGNOSTIC ]</a>
+                </div>
+
+            </section>
+
+            <!-- RIGHT: Summary Dashboard -->
+            <aside class="panel-right" aria-label="Summary Dashboard">
+
+                <div class="panel-section-label">
+                    <span class="label-line"></span>
+                    <span class="label-text">// TÓM TẮT CHẨN ĐOÁN //</span>
+                    <span class="label-line"></span>
+                </div>
+
+                <div style="padding:16px;">
+                    {% set module_icons = {'cpu': '◈', 'ram': '◈', 'disk': '▣', 'temperature': '🌡', 'fan': '🌀'} %}
+                    {% set module_names = {'cpu': 'CPU Usage', 'ram': 'RAM Usage', 'disk': 'Disk Usage', 'temperature':
+                    'Temperature', 'fan': 'Fan Noise'} %}
+
+                    {% for key, data in results.items() %}
+                    <div class="hw-summary-row hw-sev-color-{{ data.severity }}"
+                        style="display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-family:var(--cyber-font-mono); font-size:0.82rem;">
+                        <span style="font-size:1.2rem;">{{ module_icons.get(key, '◈') }}</span>
+                        <span style="flex:1;">{{ module_names.get(key, key) }}</span>
+                        <span style="font-weight:700;">{{ data.label|upper }}</span>
+                        <span class="hw-sev-badge {{ data.severity }}" style="font-size:0.6rem;">{{ data.severity|upper
+                            }}</span>
+                    </div>
+                    {% endfor %}
+
+                    <!-- Academic References -->
+                    <div
+                        style="margin-top:24px; padding:14px; background:rgba(0,20,40,0.5); border:1px solid var(--cyber-border); border-radius:4px;">
+                        <div
+                            style="font-family:var(--cyber-font-mono); font-size:0.65rem; letter-spacing:2px; color:var(--cyber-cyan-dim); margin-bottom:8px;">
+                            THAM CHIẾU HỌC THUẬT
+                        </div>
+                        <div style="font-size:0.72rem; color:var(--cyber-text-dim); line-height:1.6;">
+                            [1] Osypenko et al. (2019), <em>"Application of Fuzzy Logic for Problems of Evaluating
+                                States of a Computing System"</em>, Applied Sciences, 9(15), 3021.<br>
+                            [2] Abu-Naser & Al-Dahdooh (2012), <em>"Expert PC Troubleshooter With Fuzzy-Logic"</em>,
+                            IJAIA, 3(2), pp.11-21.<br>
+                            [3] Buriboev & Muminov (2022), <em>"Computer State Evaluation Using Adaptive Neuro-Fuzzy
+                                Inference Systems"</em>, Sensors, 22(23), 9502.<br>
+                            [4] Intel/AMD Thermal Design Guidelines.
+                        </div>
+                    </div>
+                </div>
+
+            </aside>
+
+        </div>
+    </main>
+
+    <footer class="cyber-footer">
+        <span>EXPERT-SYS // HARDWARE DIAGNOSTIC REPORT SN-{{ range(1000, 9999) | random }}</span>
+    </footer>
+
+</body>
+
+</html>

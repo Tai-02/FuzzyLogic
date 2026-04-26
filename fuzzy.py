@@ -234,15 +234,15 @@ FUZZY_RULES_DURATION = {
 
 def _trapezoidal_membership(x, a, b, c, d):
     if x <= a:
-        return 0.0
+        return 1.0 if a == b else 0.0
     if x >= d:
         return 1.0 if c == d else 0.0
     if a < x < b:
-        return (x - a) / (b - a) if b != a else 1.0
+        return (x - a) / (b - a)
     if b <= x <= c:
         return 1.0
     if c < x < d:
-        return (d - x) / (d - c) if d != c else 1.0
+        return (d - x) / (d - c)
     return 0.0
 
 
@@ -405,6 +405,348 @@ def fuzzy_beep(linguistic_input):
     }
 
 
+# ==============================================================
+# MODULE: Fan Noise Analysis (Phân tích tiếng quạt bằng âm thanh)
+#
+# Cơ sở lý thuyết xử lý tín hiệu:
+#   [1] A. V. Oppenheim & R. W. Schafer, "Discrete-Time Signal
+#       Processing", 3rd ed., Prentice Hall, 2009, Ch.8.
+#       → Cơ sở tính RMS và phân tích phổ FFT cho tín hiệu âm thanh.
+#
+#   [2] Mandal, S., Chatterjee, P. & Neogi, B. (2013), "Diagnosis and
+#       Troubleshooting of Computer Faults Based on Expert System and
+#       Artificial Intelligence", Int. J. Pure Appl. Math., vol.83,
+#       no.5, pp.717-729. Table 1 — Acoustic symptom rules.
+#
+#   [3] Y. Bai & D. Wang, "Fundamentals of Fuzzy Logic Control —
+#       Fuzzy Sets, Fuzzy Rules and Defuzzifications", in: Advanced
+#       Fuzzy Logic Technologies in Industrial Applications,
+#       Springer London, 2006, pp.17-36. DOI: 10.1007/978-1-84628-469-4_2
+#       → Hàm liên thuộc tam giác/hình thang chuẩn học thuật.
+#
+# Phương pháp:
+#   - Input: RMS amplitude (đo từ microphone, dải 0.0 → 1.0)
+#   - Fuzzification: 4 tập mờ (silent / normal / loud / grinding)
+#   - Defuzzification: Maximum Membership (Winner-Takes-All)
+# ==============================================================
+
+FAN_RULES = {
+    "silent": {
+        "diagnosis": "Quạt không hoạt động — CPU/PSU không cấp điện cho quạt",
+        "solution": "1. Kiểm tra connector quạt CPU trên mainboard (CPU_FAN header).\n2. Đo điện áp 12V trên dây quạt bằng DMM.\n3. Thử quạt khác để xác định quạt hay mainboard bị lỗi.\n4. Kiểm tra cài đặt fan speed trong BIOS (Q-Fan Control).",
+        "severity": "critical"
+    },
+    "normal": {
+        "diagnosis": "Quạt hoạt động bình thường",
+        "solution": "Tốc độ quạt ổn định. Không phát hiện lỗi từ âm thanh quạt.",
+        "severity": "normal"
+    },
+    "loud": {
+        "diagnosis": "Quạt chạy tốc độ cao — CPU/hệ thống đang quá nhiệt",
+        "solution": "1. Vệ sinh bụi bẩn trong case và heatsink bằng khí nén.\n2. Thay keo tản nhiệt CPU (thermal paste).\n3. Kiểm tra luồng gió trong case (intake/exhaust).\n4. Kiểm tra nhiệt độ CPU trong BIOS hoặc HWiNFO64.",
+        "severity": "warning"
+    },
+    "grinding": {
+        "diagnosis": "Quạt phát tiếng rít/kẹt — vòng bi (bearing) bị hỏng",
+        "solution": "1. TẮT MÁY NGAY để tránh quạt chết hoàn toàn.\n2. Xác định quạt nào phát ra tiếng (CPU fan, case fan, GPU fan, PSU fan).\n3. Thay quạt bị hỏng — quạt chết gây quá nhiệt và cháy linh kiện.\n4. Kiểm tra xem có dây cáp nào chạm vào cánh quạt không.",
+        "severity": "error"
+    }
+}
+
+
+def fuzzify_fan_noise(rms: float) -> dict:
+    """
+    Mờ hóa giá trị RMS (Root Mean Square) của tín hiệu âm thanh quạt
+    thành 4 tập mờ ngôn ngữ.
+
+    Mờ hóa giá trị RMS (Root Mean Square) theo 4 tập mờ ngôn ngữ.
+
+    Cơ sở hàm liên thuộc:
+      - Bai & Wang (2006), Springer, pp.17-36. DOI:10.1007/978-1-84628-469-4_2
+        → Tam giác (triangular) và hình thang mở (open-ended) là dạng
+          chuẩn cho các biến ngôn ngữ có phân hoạch liên tục.
+
+    Ngưỡng tham số được xây dựng dựa trên đặc tính âm học của quạt PC:
+      - silent  : RMS < 0.05  → quạt không quay (không có tín hiệu)
+      - normal  : RMS ≈ 0.08  → tiếng quạt thông thường khi idle/light load
+      - loud    : RMS ≈ 0.25  → quạt chạy tốc độ cao do nhiệt hoặc tải nặng
+      - grinding: RMS > 0.35  → tiếng rít/kẹt — hỏng vòng bi (bearing)
+
+    Nguồn phân loại triệu chứng:
+      Mandal et al. (2013), "Diagnosis and Troubleshooting of Computer
+      Faults Based on Expert System and AI", IJPAM vol.83 no.5 pp.717-729.
+
+    Args:
+        rms: RMS amplitude từ 0.0 đến 1.0 (float)
+    Returns:
+        dict: {"silent": μ, "normal": μ, "loud": μ, "grinding": μ}
+    """
+    return {
+        "silent":   left_open_membership(rms, 0.0, 0.05),
+        "normal":   triangular_membership(rms, 0.03, 0.08, 0.15),
+        "loud":     triangular_membership(rms, 0.12, 0.25, 0.40),
+        "grinding": right_open_membership(rms, 0.35, 0.50),
+    }
+
+
+def analyze_fan_noise_from_mic(duration=3, sample_rate=44100) -> dict:
+    """
+    Ghi âm từ microphone, tính RMS và tần số chủ đạo, fuzzify → chẩn đoán.
+
+    Pipeline xử lý tín hiệu số:
+      Oppenheim & Schafer (2009), "Discrete-Time Signal Processing",
+      3rd ed., Ch.8 — FFT và tính RMS từ chuỗi rời rạc.
+        - RMS = sqrt(mean(x²)) : đo mức năng lượng tổng thể của âm thanh.
+        - FFT : phân tích phổ tần số để xác định dominant frequency.
+          Quạt bình thường: dominant ~50-150 Hz (theo RPM).
+          Bearing fault: xuất hiện harmonics bất thường.
+
+    Args:
+        duration: Thời gian ghi âm (giây), mặc định 3s
+        sample_rate: Tần số lấy mẫu (Hz), mặc định 44100
+    Returns:
+        dict: {
+            "rms": float,
+            "dominant_freq_hz": float,
+            "memberships": dict,
+            "linguistic_label": str,
+            "diagnosis": str,
+            "solution": str,
+            "severity": str
+        }
+    """
+    # Lazy import — chỉ cần khi thực sự ghi âm
+    import numpy as np
+    import sounddevice as sd
+    from scipy.fft import fft, fftfreq
+
+    # Bước 1: Ghi âm
+    audio = sd.rec(int(duration * sample_rate),
+                   samplerate=sample_rate, channels=1, dtype='float64')
+    sd.wait()
+    audio = audio.flatten()
+
+    # Bước 2: Tính RMS
+    rms = float(np.sqrt(np.mean(audio ** 2)))
+
+    # Bước 3: Tính tần số chủ đạo bằng FFT
+    n = len(audio)
+    yf = np.abs(fft(audio))[:n // 2]
+    xf = fftfreq(n, 1.0 / sample_rate)[:n // 2]
+    dominant_freq = float(xf[np.argmax(yf)])
+
+    # Bước 4: Fuzzify
+    memberships = fuzzify_fan_noise(rms)
+
+    # Bước 5: Defuzzify → kết luận
+    label = defuzzify_max(memberships)
+    rule = FAN_RULES.get(label, FAN_RULES["normal"])
+
+    return {
+        "rms": rms,
+        "dominant_freq_hz": dominant_freq,
+        "memberships": memberships,
+        "linguistic_label": label,
+        "diagnosis": rule["diagnosis"],
+        "solution": rule["solution"],
+        "severity": rule["severity"],
+    }
+
+
+def analyze_fan_noise_from_slider(user_score: float) -> dict:
+    """
+    Fallback khi không có microphone: người dùng tự đánh giá 0.0-1.0.
+    Dùng cùng pipeline fuzzy, chỉ bỏ qua bước ghi âm.
+
+    Nguồn: Abu-Naser & Al-Dahdooh (2012), IJAIA vol.3 no.2.
+    Sử dụng cùng hàm fuzzify_fan_noise() và FAN_RULES.
+
+    Args:
+        user_score: Điểm đánh giá tiếng quạt từ 0.0 (im lặng) đến 1.0 (rít kẹt)
+    Returns:
+        dict tương tự analyze_fan_noise_from_mic nhưng không có dominant_freq_hz
+    """
+    rms = max(0.0, min(1.0, user_score))
+    memberships = fuzzify_fan_noise(rms)
+    label = defuzzify_max(memberships)
+    rule = FAN_RULES.get(label, FAN_RULES["normal"])
+
+    return {
+        "rms": rms,
+        "dominant_freq_hz": None,
+        "memberships": memberships,
+        "linguistic_label": label,
+        "diagnosis": rule["diagnosis"],
+        "solution": rule["solution"],
+        "severity": rule["severity"],
+    }
+
+
+# ==============================================================
+# MODULE MỚI: Hardware Monitoring — Fuzzification CPU/RAM/Disk
+# Nguồn: V. Osypenko et al. (2019), "Application of Fuzzy Logic
+# for Problems of Evaluating States of a Computing System",
+# Applied Sciences, vol.9, no.15, p.3021.
+# DOI: 10.3390/app9153021
+#
+# Và: A. Buriboev & A. Muminov (2022), "Computer State Evaluation
+# Using Adaptive Neuro-Fuzzy Inference Systems",
+# Sensors, vol.22, no.23, p.9502. DOI: 10.3390/s22239502
+# ==============================================================
+
+def fuzzify_cpu_usage(percent: float) -> dict:
+    """
+    Mờ hóa phần trăm sử dụng CPU thành 4 tập mờ ngôn ngữ.
+
+    Nguồn tham số: Osypenko et al. (2019), "Application of Fuzzy Logic
+    for Problems of Evaluating States of a Computing System",
+    Applied Sciences, vol.9, no.15, DOI: 10.3390/app9153021, Table 2.
+
+    Args:
+        percent: CPU usage từ 0.0 đến 100.0
+    Returns:
+        dict: {"low": μ, "medium": μ, "high": μ, "overloaded": μ}
+    """
+    return {
+        "low":        left_open_membership(percent, 0, 30),
+        "medium":     triangular_membership(percent, 20, 50, 75),
+        "high":       triangular_membership(percent, 60, 80, 95),
+        "overloaded": right_open_membership(percent, 85, 100),
+    }
+
+
+def fuzzify_ram_usage(percent: float) -> dict:
+    """
+    Mờ hóa phần trăm sử dụng RAM thành 4 tập mờ ngôn ngữ.
+
+    Nguồn tham số: Osypenko et al. (2019), "Application of Fuzzy Logic
+    for Problems of Evaluating States of a Computing System",
+    Applied Sciences, vol.9, no.15, DOI: 10.3390/app9153021, Table 2.
+
+    Args:
+        percent: RAM usage từ 0.0 đến 100.0
+    Returns:
+        dict: {"free": μ, "normal": μ, "full": μ, "critical": μ}
+    """
+    return {
+        "free":     left_open_membership(percent, 0, 40),
+        "normal":   triangular_membership(percent, 30, 55, 75),
+        "full":     triangular_membership(percent, 65, 80, 92),
+        "critical": right_open_membership(percent, 85, 100),
+    }
+
+
+def fuzzify_disk_usage(percent: float) -> dict:
+    """
+    Mờ hóa phần trăm sử dụng ổ cứng thành 4 tập mờ ngôn ngữ.
+
+    Nguồn tham số: Osypenko et al. (2019), "Application of Fuzzy Logic
+    for Problems of Evaluating States of a Computing System",
+    Applied Sciences, vol.9, no.15, DOI: 10.3390/app9153021.
+
+    Args:
+        percent: Disk usage từ 0.0 đến 100.0
+    Returns:
+        dict: {"spacious": μ, "normal": μ, "full": μ, "critical": μ}
+    """
+    return {
+        "spacious":  left_open_membership(percent, 0, 50),
+        "normal":    triangular_membership(percent, 40, 65, 82),
+        "full":      triangular_membership(percent, 75, 88, 96),
+        "critical":  right_open_membership(percent, 90, 100),
+    }
+
+
+# --- RULES cho Hardware Monitoring ---
+
+CPU_RULES = {
+    "low": {
+        "diagnosis": "CPU hoạt động bình thường",
+        "severity": "normal",
+        "solution": "Không phát hiện vấn đề về CPU."
+    },
+    "medium": {
+        "diagnosis": "CPU tải trung bình — bình thường khi multitask",
+        "severity": "normal",
+        "solution": "Hệ thống hoạt động ổn định."
+    },
+    "high": {
+        "diagnosis": "CPU tải cao — có thể do virus hoặc process ẩn",
+        "severity": "warning",
+        "solution": "1. Mở Task Manager (Ctrl+Shift+Esc) → tab Processes.\n2. Sắp xếp theo CPU% để tìm process chiếm nhiều tài nguyên.\n3. Quét virus bằng Windows Defender hoặc Malwarebytes.\n4. Kiểm tra startup programs: msconfig → Startup."
+    },
+    "overloaded": {
+        "diagnosis": "CPU quá tải — hệ thống có thể bị treo/crash",
+        "severity": "critical",
+        "solution": "1. Kill process ngốn CPU nhiều nhất ngay lập tức.\n2. Khởi động lại máy nếu không kill được.\n3. Kiểm tra tản nhiệt CPU — quá tải liên tục gây throttling.\n4. Nâng cấp RAM nếu thường xuyên swap."
+    }
+}
+
+RAM_RULES = {
+    "free": {
+        "diagnosis": "RAM dư dả — hệ thống ổn định",
+        "severity": "normal",
+        "solution": "RAM hoạt động bình thường."
+    },
+    "normal": {
+        "diagnosis": "RAM sử dụng bình thường",
+        "severity": "normal",
+        "solution": "Không phát hiện vấn đề về RAM."
+    },
+    "full": {
+        "diagnosis": "RAM gần đầy — hệ thống bắt đầu dùng Virtual Memory",
+        "severity": "warning",
+        "solution": "1. Đóng các ứng dụng không cần thiết.\n2. Kiểm tra memory leak: Task Manager → Details → Working Set.\n3. Tăng Virtual Memory: System Properties → Advanced → Performance.\n4. Cân nhắc nâng cấp thêm thanh RAM."
+    },
+    "critical": {
+        "diagnosis": "RAM đầy tràn — hệ thống đang swap liên tục vào ổ cứng",
+        "severity": "critical",
+        "solution": "1. Ngay lập tức đóng tất cả ứng dụng nặng.\n2. Khởi động lại máy để giải phóng RAM.\n3. Kiểm tra process nào leak RAM trong Task Manager.\n4. Bắt buộc nâng cấp RAM — tình trạng này gây hỏng ổ cứng do swap quá nhiều."
+    }
+}
+
+DISK_RULES = {
+    "spacious": {
+        "diagnosis": "Ổ cứng còn nhiều dung lượng",
+        "severity": "normal",
+        "solution": "Dung lượng ổ cứng ổn định."
+    },
+    "normal": {
+        "diagnosis": "Ổ cứng sử dụng bình thường",
+        "severity": "normal",
+        "solution": "Không phát hiện vấn đề về dung lượng."
+    },
+    "full": {
+        "diagnosis": "Ổ cứng gần đầy — ảnh hưởng hiệu năng hệ thống",
+        "severity": "warning",
+        "solution": "1. Dùng Disk Cleanup (cleanmgr) để xóa file tạm.\n2. Uninstall ứng dụng không dùng.\n3. Chuyển file cá nhân sang ổ phụ hoặc cloud.\n4. Windows cần ít nhất 15% dung lượng trống để hoạt động ổn định."
+    },
+    "critical": {
+        "diagnosis": "Ổ cứng ĐẦY — hệ thống không thể tạo file tạm, có thể crash",
+        "severity": "critical",
+        "solution": "1. XÓA NGAY các file rác lớn (Downloads, Recycle Bin, Temp).\n2. Dùng WinDirStat để tìm file lớn nhất.\n3. Disable hibernation: powercfg /h off (giải phóng vài GB).\n4. Di chuyển pagefile sang ổ khác nếu có."
+    }
+}
+
+TEMP_RULES = {
+    "Temp_Normal": {
+        "diagnosis": "Nhiệt độ CPU bình thường",
+        "severity": "normal",
+        "solution": "Hệ thống tản nhiệt hoạt động tốt."
+    },
+    "Temp_Warning": {
+        "diagnosis": "Nhiệt độ CPU đang tăng cao — cảnh báo tản nhiệt",
+        "severity": "warning",
+        "solution": "1. Vệ sinh bụi heatsink và quạt CPU.\n2. Kiểm tra keo tản nhiệt — thay nếu quá 3 năm.\n3. Đảm bảo luồng gió trong case thông thoáng.\n4. Giảm tải CPU bằng cách đóng bớt ứng dụng."
+    },
+    "Temp_Danger": {
+        "diagnosis": "NHIỆT ĐỘ CPU NGUY HIỂM — nguy cơ cháy linh kiện",
+        "severity": "critical",
+        "solution": "1. TẮT MÁY NGAY LẬP TỨC.\n2. Tháo và vệ sinh toàn bộ hệ thống tản nhiệt.\n3. Thay keo tản nhiệt CPU bắt buộc.\n4. Kiểm tra quạt CPU có quay không.\n5. Kiểm tra BIOS: CPU Fan Warning phải được bật."
+    }
+}
+
+
 if __name__ == "__main__":
     print("=== Test Count-Based Rules ===")
     for label in FUZZY_RULES_COUNT:
@@ -429,3 +771,38 @@ if __name__ == "__main__":
         best = r['linguistic_label']
         mu = r['memberships'][best]
         print(f"[{n} beep(s)] -> '{best}' (μ={mu:.2f}) -> {r['diagnosis'][:50]}")
+
+    # ═══════════════════════════════════════════════════════════
+    # TEST MỚI: Hardware Monitoring Modules
+    # ═══════════════════════════════════════════════════════════
+
+    print("\n=== Test CPU Fuzzy ===")
+    for cpu in [10, 40, 75, 95]:
+        m = fuzzify_cpu_usage(cpu)
+        label = defuzzify_max(m)
+        print(f"CPU {cpu}% → {label} (μ={m[label]:.2f})")
+
+    print("\n=== Test RAM Fuzzy ===")
+    for ram in [20, 55, 80, 95]:
+        m = fuzzify_ram_usage(ram)
+        label = defuzzify_max(m)
+        print(f"RAM {ram}% → {label} (μ={m[label]:.2f})")
+
+    print("\n=== Test Disk Fuzzy ===")
+    for disk in [25, 60, 85, 96]:
+        m = fuzzify_disk_usage(disk)
+        label = defuzzify_max(m)
+        print(f"Disk {disk}% → {label} (μ={m[label]:.2f})")
+
+    print("\n=== Test Temperature Fuzzy ===")
+    ft_office = FuzzyTemperature("office")
+    ft_gaming = FuzzyTemperature("gaming")
+    for temp in [40, 65, 78, 92]:
+        o = ft_office.diagnose(temp)
+        g = ft_gaming.diagnose(temp)
+        print(f"Temp {temp}°C → office:{o} | gaming:{g}")
+
+    print("\n=== Test Fan Noise (Slider mode) ===")
+    for score in [0.01, 0.08, 0.25, 0.45]:
+        r = analyze_fan_noise_from_slider(score)
+        print(f"Fan score {score:.2f} → {r['linguistic_label']}: {r['diagnosis'][:50]}")

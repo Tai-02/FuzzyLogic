@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: mysql:8.0
@@ -9,9 +7,11 @@ services:
       MYSQL_DATABASE: expert_system
       MYSQL_ROOT_PASSWORD: root_password
     ports:
-      - "3306:3306"
+      - "3307:3306"
     volumes:
       - ./data.sql:/docker-entrypoint-initdb.d/data.sql
+    networks:
+      - fuzzy_net
 
   web:
     build: .
@@ -28,3 +28,22 @@ services:
       - DB_USER=root
       - DB_PASSWORD=root_password
       - DB_NAME=expert_system
+      - HARDWARE_AGENT_URL=http://host.docker.internal:5001
+    networks:
+      - fuzzy_net
+
+  agent:
+    build: .
+    container_name: fuzzy_agent
+    restart: always
+    command: ["python", "hardware_agent.py"]
+    ports:
+      - "5001:5001"
+    environment:
+      - FLASK_ENV=production
+    networks:
+      - fuzzy_net
+
+networks:
+  fuzzy_net:
+    driver: bridge

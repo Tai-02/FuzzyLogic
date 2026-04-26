@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expert PC Troubleshooter // HARDWARE SCAN</title>
+    <meta name="description"
+        content="Chẩn đoán phần cứng real-time với Hardware Agent hoặc nhập tay bằng slider.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Chakra+Petch:wght@400;600;700&family=Be+Vietnam+Pro:wght@400;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .hw-agent-status {
+            padding: 14px 18px;
+            border-radius: 4px;
+            margin-bottom: 22px;
+            font-family: var(--cyber-font-mono);
+            font-size: 0.82rem;
+            letter-spacing: 0.5px;
+        }
+        .hw-agent-status.connected {
+            background: rgba(0, 255, 136, 0.08);
+            border: 1px solid rgba(0, 255, 136, 0.4);
+            color: var(--cyber-green, #00ff88);
+        }
+        .hw-agent-status.disconnected {
+            background: rgba(255, 60, 60, 0.08);
+            border: 1px solid rgba(255, 60, 60, 0.4);
+            color: #ff5555;
+        }
+        .hw-slider-group {
+            margin-bottom: 20px;
+        }
+        .hw-slider-group .cyber-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .hw-value-badge {
+            font-family: var(--cyber-font-mono);
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--cyber-accent, #00ccff);
+            text-shadow: 0 0 8px rgba(0, 204, 255, 0.4);
+        }
+        .hw-meter-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+        .hw-meter-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.4s ease, background 0.3s;
+        }
+        .hw-meter-fill.normal { background: linear-gradient(90deg, #00ff88, #00cc6a); }
+        .hw-meter-fill.warning { background: linear-gradient(90deg, #ffcc00, #ff8800); }
+        .hw-meter-fill.critical { background: linear-gradient(90deg, #ff4444, #ff0000); }
+        .hw-preview-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-top: 6px;
+            font-size: 0.75rem;
+            font-family: var(--cyber-font-mono);
+        }
+        .hw-preview-label-tag {
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        .hw-preview-label-tag.normal { background: rgba(0,255,136,0.15); color: #00ff88; }
+        .hw-preview-label-tag.warning { background: rgba(255,204,0,0.15); color: #ffcc00; }
+        .hw-preview-label-tag.critical { background: rgba(255,60,60,0.15); color: #ff5555; }
+        .hw-preview-label-tag.error { background: rgba(255,60,60,0.15); color: #ff5555; }
+        .hw-fan-icons {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            justify-content: center;
+            margin: 12px 0;
+            font-size: 2rem;
+        }
+        .hw-fan-spin {
+            display: inline-block;
+            animation: fanSpin 1s linear infinite;
+        }
+        @keyframes fanSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .hw-nav-link {
+            display: inline-block;
+            margin-top: 10px;
+            color: var(--cyber-cyan-dim, #4ecdc4);
+            font-family: var(--cyber-font-mono);
+            font-size: 0.8rem;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        .hw-nav-link:hover { color: var(--cyber-accent, #00ccff); }
+    </style>
+</head>
+
+<body class="cyber-body">
+
+    <div class="scanline-overlay" aria-hidden="true"></div>
+
+    <header class="cyber-header" role="banner">
+        <div class="cyber-header-inner">
+            <div class="cyber-logo">
+                <span class="logo-bracket">[</span>
+                <span class="logo-text">EXPERT-SYS</span>
+                <span class="logo-bracket">]</span>
+                <span class="logo-sub">// HARDWARE_SCAN_v1.0</span>
+            </div>
+            <div class="cyber-status-bar">
+                {% if agent_data %}
+                <span class="status-dot blink-green"></span>
+                <span class="status-text">AGENT ONLINE</span>
+                {% else %}
+                <span class="status-dot" style="background:#ff5555;"></span>
+                <span class="status-text">AGENT OFFLINE</span>
+                {% endif %}
+                <span class="status-sep">|</span>
+                <a href="/" class="cyber-admin-link">◂ QUÉT BIOS</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="cyber-main">
+        <div class="cyber-grid">
+
+            <!-- LEFT COLUMN: HARDWARE FORM -->
+            <section class="panel-left">
+                <div class="panel-section-label">
+                    <span class="label-line"></span>
+                    <span class="label-text">// HARDWARE MONITORING — CHẨN ĐOÁN PHẦN CỨNG //</span>
+                    <span class="label-line"></span>
+                </div>
+
+                <!-- Agent Status -->
+                {% if agent_data %}
+                <div class="hw-agent-status connected">
+                    ✔ Hardware Agent đã kết nối — Dữ liệu real-time từ {{ agent_data.platform }}
+                    <br>CPU: {{ agent_data.cpu_percent }}% | RAM: {{ agent_data.ram_percent }}% | Disk: {{ agent_data.disk_percent }}%
+                    {% if agent_data.cpu_temp %}| Temp: {{ agent_data.cpu_temp }}°C{% endif %}
+                </div>
+                {% elif agent_error %}
+                <div class="hw-agent-status disconnected">
+                    ✖ {{ agent_error }}
+                    <br><small>Bạn có thể nhập dữ liệu thủ công bằng các slider bên dưới.</small>
+                </div>
+                {% endif %}
+
+                <form method="post" id="hw-scan-form">
+
+                    <!-- CPU Usage -->
+                    <div class="hw-slider-group">
+                        <label class="cyber-label" for="cpu_percent">
+                            ◈ CPU USAGE (%)
+                            <span class="hw-value-badge" id="cpu-val-display">
+                                {{ agent_data.cpu_percent if agent_data else 25 }}%
+                            </span>
+                        </label>
+                        <div class="slider-wrapper">
+                            <input type="range" id="cpu_percent" name="cpu_percent"
+                                   min="0" max="100" step="1"
+                                   value="{{ agent_data.cpu_percent if agent_data else 25 }}"
+                                   class="cyber-slider" oninput="updateHwSlider('cpu', this.value)">
+                        </div>
+                        <div class="hw-meter-bar"><div class="hw-meter-fill normal" id="cpu-meter" style="width:25%"></div></div>
+                        <div class="hw-preview-row">
+                            <span>FUZZY →</span>
+                            <span class="hw-preview-label-tag normal" id="cpu-label-tag">low</span>
+                        </div>
+                    </div>
+
+                    <!-- RAM Usage -->
+                    <div class="hw-slider-group">
+                        <label class="cyber-label" for="ram_percent">
+                            ◈ RAM USAGE (%)
+                            <span class="hw-value-badge" id="ram-val-display">
+                                {{ agent_data.ram_percent if agent_data else 40 }}%
+                            </span>
+                        </label>
+                        <div class="slider-wrapper">
+                            <input type="range" id="ram_percent" name="ram_percent"
+                                   min="0" max="100" step="1"
+                                   value="{{ agent_data.ram_percent if agent_data else 40 }}"
+                                   class="cyber-slider" oninput="updateHwSlider('ram', this.value)">
+                        </div>
+                        <div class="hw-meter-bar"><div class="hw-meter-fill normal" id="ram-meter" style="width:40%"></div></div>
+                        <div class="hw-preview-row">
+                            <span>FUZZY →</span>
+                            <span class="hw-preview-label-tag normal" id="ram-label-tag">free</span>
+                        </div>
+                    </div>
+
+                    <!-- Disk Usage -->
+                    <div class="hw-slider-group">
+                        <label class="cyber-label" for="disk_percent">
+                            ▣ DISK USAGE (%)
+                            <span class="hw-value-badge" id="disk-val-display">
+                                {{ agent_data.disk_percent if agent_data else 50 }}%
+                            </span>
+                        </label>
+                        <div class="slider-wrapper">
+                            <input type="range" id="disk_percent" name="disk_percent"
+                                   min="0" max="100" step="1"
+                                   value="{{ agent_data.disk_percent if agent_data else 50 }}"
+                                   class="cyber-slider" oninput="updateHwSlider('disk', this.value)">
+                        </div>
+                        <div class="hw-meter-bar"><div class="hw-meter-fill normal" id="disk-meter" style="width:50%"></div></div>
+                        <div class="hw-preview-row">
+                            <span>FUZZY →</span>
+                            <span class="hw-preview-label-tag normal" id="disk-label-tag">spacious</span>
+                        </div>
+                    </div>
+
+                    <!-- Temperature -->
+                    <div class="panel-section-label" style="margin-top: 24px;">
+                        <span class="label-line"></span>
+                        <span class="label-text">// NHIỆT ĐỘ CPU (THERMAL MONITORING) //</span>
+                        <span class="label-line"></span>
+                    </div>
+
+                    <div class="hw-slider-group">
+                        <label class="cyber-label" for="pc_type">LOẠI THIẾT BỊ:</label>
+                        <select name="pc_type" id="pc_type" class="cyber-select" onchange="updateHwSlider('temp', document.getElementById('cpu_temp').value)">
+                            <option value="office">🖥 Desktop / Văn phòng</option>
+                            <option value="gaming">🎮 Laptop Gaming</option>
+                        </select>
+                    </div>
+
+                    <div class="hw-slider-group">
+                        <label class="cyber-label" for="cpu_temp">
+                            🌡 NHIỆT ĐỘ CPU (°C)
+                            <span class="hw-value-badge" id="temp-val-display">
+                                {{ agent_data.cpu_temp|default(50, true) }}°C
+                            </span>
+                        </label>
+                        <div class="slider-wrapper">
+                            <input type="range" id="cpu_temp" name="cpu_temp"
+                                   min="30" max="110" step="1"
+                                   value="{{ agent_data.cpu_temp|default(50, true) }}"
+                                   class="cyber-slider" oninput="updateHwSlider('temp', this.value)">
+                        </div>
+                        <div class="hw-meter-bar"><div class="hw-meter-fill normal" id="temp-meter" style="width:25%"></div></div>
+                        <div class="hw-preview-row">
+                            <span>FUZZY →</span>
+                            <span class="hw-preview-label-tag normal" id="temp-label-tag">Temp_Normal</span>
+                        </div>
+                    </div>
+
+
+                    <button type="submit" class="cyber-submit-btn" id="btn-hw-scan">
+                        <span class="btn-bracket">[</span> CHẨN ĐOÁN PHẦN CỨNG <span class="btn-bracket">]</span>
+                    </button>
+                </form>
+
+                <div style="text-align:center; margin-top: 16px;">
+                    <a href="/" class="hw-nav-link">◂ Quay về Chẩn đoán BIOS</a>
+                </div>
+            </section>
+
+            <!-- RIGHT COLUMN: LIVE GAUGE -->
+            <aside class="panel-right">
+                <div class="panel-section-label">
+                    <span class="label-line"></span>
+                    <span class="label-text">// SYSTEM HEALTH GAUGE //</span>
+                    <span class="label-line"></span>
+                </div>
+                <div id="health-gauges" style="display:flex; flex-direction:column; gap:18px; padding:16px;">
+                    <!-- CPU Gauge -->
+                    <div class="gauge-card" id="gauge-cpu">
+                        <div style="font-family:var(--cyber-font-mono); font-size:0.7rem; color:var(--cyber-cyan-dim); letter-spacing:2px; margin-bottom:6px;">CPU LOAD</div>
+                        <div style="position:relative; height:18px; background:rgba(0,0,0,0.5); border:1px solid var(--cyber-border); border-radius:2px; overflow:hidden;">
+                            <div id="gauge-cpu-fill" style="height:100%; width:25%; background: linear-gradient(90deg,#00ff88,#00cc6a); transition: width 0.5s, background 0.5s;"></div>
+                        </div>
+                        <div style="text-align:right; font-family:var(--cyber-font-mono); font-size:0.8rem; color:var(--cyber-green); margin-top:3px;" id="gauge-cpu-val">25%</div>
+                    </div>
+                    <!-- RAM Gauge -->
+                    <div class="gauge-card" id="gauge-ram">
+                        <div style="font-family:var(--cyber-font-mono); font-size:0.7rem; color:var(--cyber-cyan-dim); letter-spacing:2px; margin-bottom:6px;">RAM USAGE</div>
+                        <div style="position:relative; height:18px; background:rgba(0,0,0,0.5); border:1px solid var(--cyber-border); border-radius:2px; overflow:hidden;">
+                            <div id="gauge-ram-fill" style="height:100%; width:40%; background: linear-gradient(90deg,#00ff88,#00cc6a); transition: width 0.5s, background 0.5s;"></div>
+                        </div>
+                        <div style="text-align:right; font-family:var(--cyber-font-mono); font-size:0.8rem; color:var(--cyber-green); margin-top:3px;" id="gauge-ram-val">40%</div>
+                    </div>
+                    <!-- Disk Gauge -->
+                    <div class="gauge-card" id="gauge-disk">
+                        <div style="font-family:var(--cyber-font-mono); font-size:0.7rem; color:var(--cyber-cyan-dim); letter-spacing:2px; margin-bottom:6px;">DISK USAGE</div>
+                        <div style="position:relative; height:18px; background:rgba(0,0,0,0.5); border:1px solid var(--cyber-border); border-radius:2px; overflow:hidden;">
+                            <div id="gauge-disk-fill" style="height:100%; width:50%; background: linear-gradient(90deg,#00ff88,#00cc6a); transition: width 0.5s, background 0.5s;"></div>
+                        </div>
+                        <div style="text-align:right; font-family:var(--cyber-font-mono); font-size:0.8rem; color:var(--cyber-green); margin-top:3px;" id="gauge-disk-val">50%</div>
+                    </div>
+                    <!-- Temp Gauge -->
+                    <div class="gauge-card" id="gauge-temp">
+                        <div style="font-family:var(--cyber-font-mono); font-size:0.7rem; color:var(--cyber-cyan-dim); letter-spacing:2px; margin-bottom:6px;">CPU TEMPERATURE</div>
+                        <div style="position:relative; height:18px; background:rgba(0,0,0,0.5); border:1px solid var(--cyber-border); border-radius:2px; overflow:hidden;">
+                            <div id="gauge-temp-fill" style="height:100%; width:25%; background: linear-gradient(90deg,#00ff88,#00cc6a); transition: width 0.5s, background 0.5s;"></div>
+                        </div>
+                        <div style="text-align:right; font-family:var(--cyber-font-mono); font-size:0.8rem; color:var(--cyber-green); margin-top:3px;" id="gauge-temp-val">50°C</div>
+                    </div>
+                </div>
+            </aside>
+
+        </div>
+    </main>
+
+    <script>
+        // ─── Fuzzy MF helpers (client-side mirror) ────────────────
+        function _triMu(x, a, b, c) {
+            if (x <= a || x >= c) return 0;
+            return x <= b ? (x - a) / (b - a) : (c - x) / (c - b);
+        }
+        function _leftOpen(x, a, b) {
+            if (x <= a) return 1; if (x >= b) return 0;
+            return (b - x) / (b - a);
+        }
+        function _rightOpen(x, a, b) {
+            if (x <= a) return 0; if (x >= b) return 1;
+            return (x - a) / (b - a);
+        }
+        function _trapMu(x, a, b, c, d) {
+            if (x <= a) return (a === b) ? 1 : 0;
+            if (x >= d) return (c === d) ? 1 : 0;
+            if (x < b) return (x - a) / (b - a);
+            if (x <= c) return 1;
+            return (d - x) / (d - c);
+        }
+        function _defuzMax(m) {
+            let best = null, maxV = -1;
+            for (const [k, v] of Object.entries(m)) { if (v > maxV) { maxV = v; best = k; } }
+            return best;
+        }
+
+        // ─── Fuzzy CPU ────────
+        function fuzzCPU(p) {
+            return { low: _leftOpen(p,0,30), medium: _triMu(p,20,50,75), high: _triMu(p,60,80,95), overloaded: _rightOpen(p,85,100) };
+        }
+        // ─── Fuzzy RAM ────────
+        function fuzzRAM(p) {
+            return { free: _leftOpen(p,0,40), normal: _triMu(p,30,55,75), full: _triMu(p,65,80,92), critical: _rightOpen(p,85,100) };
+        }
+        // ─── Fuzzy Disk ───────
+        function fuzzDisk(p) {
+            return { spacious: _leftOpen(p,0,50), normal: _triMu(p,40,65,82), full: _triMu(p,75,88,96), critical: _rightOpen(p,90,100) };
+        }
+        // ─── Fuzzy Fan ────────
+        function fuzzFan(r) {
+            return { silent: _leftOpen(r,0,0.05), normal: _triMu(r,0.03,0.08,0.15), loud: _triMu(r,0.12,0.25,0.40), grinding: _rightOpen(r,0.35,0.50) };
+        }
+        // ─── Fuzzy Temp ───────
+        const TEMP_P = {
+            office: { norm: [30,30,45,60], warn: [55,65,80], danger: [75,90,110,110] },
+            gaming: { norm: [40,40,65,85], warn: [80,90,95], danger: [90,100,110,110] }
+        };
+        function fuzzTemp(t, type) {
+            const p = TEMP_P[type] || TEMP_P.office;
+            return {
+                Temp_Normal:  _trapMu(t, ...p.norm),
+                Temp_Warning: _triMu(t, ...p.warn),
+                Temp_Danger:  _trapMu(t, ...p.danger)
+            };
+        }
+
+        // ─── Severity from label ──────
+        const SEV_MAP = {
+            low:'normal', medium:'normal', high:'warning', overloaded:'critical',
+            free:'normal', normal:'normal', full:'warning', critical:'critical',
+            spacious:'normal',
+            Temp_Normal:'normal', Temp_Warning:'warning', Temp_Danger:'critical',
+            silent:'critical', loud:'warning', grinding:'error'
+        };
+        function sevClass(label) { return SEV_MAP[label] || 'normal'; }
+
+        function colorForSev(sev) {
+            if (sev === 'critical' || sev === 'error') return 'linear-gradient(90deg,#ff4444,#ff0000)';
+            if (sev === 'warning') return 'linear-gradient(90deg,#ffcc00,#ff8800)';
+            return 'linear-gradient(90deg,#00ff88,#00cc6a)';
+        }
+
+        // ─── Main updater ─────
+        function updateHwSlider(type, val) {
+            val = parseFloat(val);
+            let label, sev, displayVal, meterWidth;
+
+            if (type === 'cpu') {
+                const m = fuzzCPU(val); label = _defuzMax(m); sev = sevClass(label);
+                displayVal = val + '%'; meterWidth = val + '%';
+            } else if (type === 'ram') {
+                const m = fuzzRAM(val); label = _defuzMax(m); sev = sevClass(label);
+                displayVal = val + '%'; meterWidth = val + '%';
+            } else if (type === 'disk') {
+                const m = fuzzDisk(val); label = _defuzMax(m); sev = sevClass(label);
+                displayVal = val + '%'; meterWidth = val + '%';
+            } else if (type === 'temp') {
+                const pcType = document.getElementById('pc_type').value;
+                const m = fuzzTemp(val, pcType); label = _defuzMax(m); sev = sevClass(label);
+                displayVal = val + '°C'; meterWidth = ((val - 30) / 80 * 100) + '%';
+            } else if (type === 'fan') {
+                const m = fuzzFan(val); label = _defuzMax(m); sev = sevClass(label);
+                displayVal = val.toFixed(2); meterWidth = (val * 100) + '%';
+                // Fan icon speed
+                const fanIcon = document.getElementById('fan-icon');
+                if (label === 'silent') fanIcon.style.animationDuration = '0s';
+                else if (label === 'normal') fanIcon.style.animationDuration = '2s';
+                else if (label === 'loud') fanIcon.style.animationDuration = '0.5s';
+                else fanIcon.style.animationDuration = '0.15s';
+            }
+
+            // Update display
+            document.getElementById(type + '-val-display').textContent = displayVal;
+            const meter = document.getElementById(type + '-meter');
+            meter.style.width = meterWidth;
+            meter.className = 'hw-meter-fill ' + sev;
+            const tag = document.getElementById(type + '-label-tag');
+            tag.textContent = label;
+            tag.className = 'hw-preview-label-tag ' + sev;
+
+            // Update right-side gauge
+            const gaugeFill = document.getElementById('gauge-' + type + '-fill');
+            const gaugeVal = document.getElementById('gauge-' + type + '-val');
+            if (gaugeFill) {
+                gaugeFill.style.width = meterWidth;
+                gaugeFill.style.background = colorForSev(sev);
+            }
+            if (gaugeVal) {
+                gaugeVal.textContent = displayVal;
+                gaugeVal.style.color = sev === 'critical' || sev === 'error' ? '#ff5555' : sev === 'warning' ? '#ffcc00' : 'var(--cyber-green)';
+            }
+        }
+
+        // ─── Init on load ─────
+        document.addEventListener('DOMContentLoaded', () => {
+            updateHwSlider('cpu', document.getElementById('cpu_percent').value);
+            updateHwSlider('ram', document.getElementById('ram_percent').value);
+            updateHwSlider('disk', document.getElementById('disk_percent').value);
+            updateHwSlider('temp', document.getElementById('cpu_temp').value);
+            updateHwSlider('fan', document.getElementById('fan_score').value);
+        });
+
+        // ─── Submit animation ─
+        document.getElementById('hw-scan-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-hw-scan');
+            btn.innerHTML = '<span class="btn-bracket">[</span> ĐANG PHÂN TÍCH... <span class="blink-green" style="display:inline-block;margin-left:8px;width:8px;height:8px;"></span> <span class="btn-bracket">]</span>';
+            btn.style.pointerEvents = 'none';
+            btn.style.opacity = '0.8';
+            setTimeout(() => { HTMLFormElement.prototype.submit.call(this); }, 1200);
+        });
+    </script>
+</body>
+
+</html>

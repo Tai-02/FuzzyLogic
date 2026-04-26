@@ -30,6 +30,8 @@
                 <span class="status-text">HỆ THỐNG ONLINE</span>
                 <span class="status-sep">|</span>
                 <a href="/admin" class="cyber-admin-link">⚙ QUẢN TRỊ VIÊN</a>
+                <span class="status-sep">|</span>
+                <a href="/hardware-scan" class="cyber-admin-link">🖥 HARDWARE SCAN</a>
             </div>
         </div>
     </header>
@@ -89,7 +91,9 @@
                             <button type="button" class="beep-tab active" id="tab-count"
                                 onclick="switchBeepMode('count', this)">▸ SỐ LẦN BÍP</button>
                             <button type="button" class="beep-tab" id="tab-duration"
-                                onclick="switchBeepMode('duration', this)">▸ ĐỘ DÀI TIẾNG BÍP</button>
+                                onclick="switchBeepMode('duration', this)">▸ ĐỘ DÀI</button>
+                            <button type="button" class="beep-tab" id="tab-mic"
+                                onclick="switchBeepMode('mic', this)">▸ GHI ÂM (MIC)</button>
                         </div>
 
                         <div id="mode-count">
@@ -125,6 +129,19 @@
                             <input type="hidden" name="beep_duration" id="hidden_beep_duration" value="0.3">
                         </div>
 
+                        <div id="mode-mic" style="display:none; text-align:center; padding: 10px 0;">
+                            <p class="preview-diag" style="margin-bottom:12px; color: var(--cyber-cyan-dim, #4ecdc4); font-size:0.8rem;">
+                                ⏺ Nhấn nút bên dưới và bật tiếng bíp (hoặc giả lập tiếng bíp).<br>
+                                Hệ thống sẽ đo thời gian phát ra âm thanh.
+                            </p>
+                            <button type="button" id="btn-beep-mic" class="cyber-submit-btn"
+                                    style="font-size:0.8rem; padding: 8px 20px;"
+                                    onclick="recordBeep()">
+                                🎙 BẮT ĐẦU GHI ÂM BÍP (3 GIÂY)
+                            </button>
+                            <div id="beep-mic-status" style="margin-top:8px; font-size:0.75rem; font-family:var(--cyber-font-mono); color:#aaa;"></div>
+                        </div>
+
                         <div id="beep-preview" class="beep-preview-box">
                             <span id="preview-label" class="preview-label"></span>
                             <span id="preview-severity" class="preview-sev-badge"></span>
@@ -132,47 +149,58 @@
                         </div>
                     </div>
 
+
                     <!-- ═══════════════════════════════════════════════
-                         [THÊM MỚI] KHỐI CHẨN ĐOÁN NHIỆT ĐỘ
-                         Context-Aware Fuzzy Temperature Module
+                         KHỐI TIẾNG QUẠT (FAN NOISE ANALYSIS)
+                         Nguồn: Oppenheim & Schafer (2009), DSP Ch.8
+                                Mandal et al. (2013), IJPAM vol.83
+                                Bai & Wang (2006), Springer Fuzzy MF
                     ════════════════════════════════════════════════ -->
                     <div class="panel-section-label" style="margin-top: 28px;">
                         <span class="label-line"></span>
-                        <span class="label-text">// NHIỆT ĐỘ HỆ THỐNG (THERMAL ANALYSIS) //</span>
+                        <span class="label-text">// TIẾNG QUẠT (FAN NOISE ANALYSIS) //</span>
                         <span class="label-line"></span>
                     </div>
 
                     <div class="beep-panel">
-                        <!-- Chọn loại máy (ngữ cảnh) -->
-                        <label class="cyber-label" for="pc_type">LOẠI THIẾT BỊ (Hardware Context):</label>
-                        <select name="pc_type" id="pc_type" class="cyber-select" onchange="updateThermalProfile()">
-                            <option value="office">🖥 Máy bàn / Văn phòng (Desktop / Office)</option>
-                            <option value="gaming">🎮 Laptop Gaming / Hiệu năng cao</option>
-                        </select>
+                        <p class="preview-diag" style="margin-bottom:12px; color: var(--cyber-cyan-dim, #4ecdc4); font-size:0.8rem;">
+                            📌 Đo bằng <strong>microphone</strong> — Đặt micro gần thùng máy, nhấn nút ghi âm 3 giây.
+                            Nếu không có mic, dùng thanh trượt để nhập thủ công (0.0 = im lặng → 1.0 = rít kẹt).
+                        </p>
 
-                        <!-- Thanh trượt nhiệt độ -->
-                        <label class="cyber-label" style="margin-top: 14px;" for="temperature">
-                            NHIỆT ĐỘ CPU/GPU ĐO ĐƯỢC:
-                            <span id="temp-display" class="sv-value" style="float:right; color: var(--cyber-accent);">45°C</span>
+                        <!-- Nút ghi âm -->
+                        <div style="text-align:center; margin-bottom:14px;">
+                            <button type="button" id="btn-fan-mic" class="cyber-submit-btn"
+                                    style="font-size:0.8rem; padding: 8px 20px;"
+                                    onclick="recordFanNoise()">
+                                🎙 GHI ÂM TIẾNG QUẠT (3 GIÂY)
+                            </button>
+                            <div id="fan-mic-status" style="margin-top:8px; font-size:0.75rem; font-family:var(--cyber-font-mono); color:#aaa;"></div>
+                        </div>
+
+                        <!-- Thanh trượt thủ công (fallback) -->
+                        <label class="cyber-label" for="fan_score">
+                            MỨC ĐỘ TIẾNG QUẠT (RMS — Fallback thủ công):
+                            <span id="fan-display" class="sv-value" style="float:right; color: var(--cyber-accent);">0.05</span>
                         </label>
                         <div class="slider-wrapper">
-                            <input type="range" id="temperature" name="temperature"
-                                   min="30" max="110" step="1" value="45"
-                                   class="cyber-slider" oninput="updateTempDisplay(this.value)">
+                            <input type="range" id="fan_score" name="fan_score"
+                                   min="0" max="1" step="0.01" value="0.05"
+                                   class="cyber-slider" oninput="updateFanDisplay(this.value)">
                             <div class="slider-ticks">
-                                <span>30°</span><span>45°</span><span>60°</span>
-                                <span>75°</span><span>90°</span><span>110°</span>
+                                <span>0.0</span><span>0.1</span><span>0.2</span>
+                                <span>0.3</span><span>0.5</span><span>1.0</span>
                             </div>
                         </div>
 
-                        <!-- Vùng hiển thị dự đoán real-time -->
-                        <div id="temp-preview" class="beep-preview-box show" style="margin-top: 12px;">
-                            <span id="temp-preview-label" class="preview-label">45°C</span>
-                            <span id="temp-preview-badge" class="preview-sev-badge sev-normal">NORMAL</span>
-                            <div id="temp-preview-info" class="preview-diag">Nhiệt độ ổn định — Hệ thống hoạt động tốt.</div>
+                        <!-- Preview real-time -->
+                        <div id="fan-preview" class="beep-preview-box show" style="margin-top: 12px;">
+                            <span id="fan-preview-label" class="preview-label">⚙ 0.05 RMS</span>
+                            <span id="fan-preview-badge" class="preview-sev-badge sev-normal">SILENT</span>
+                            <div id="fan-preview-info" class="preview-diag">Quạt không hoạt động hoặc rất yên tĩnh.</div>
                         </div>
                     </div>
-                    <!-- ═════ KẾT THÚC KHỐI NHIỆT ĐỘ ════════════════ -->
+                    <!-- ═════ KẾT THÚC KHỐI TIẾNG QUẠT ════════════════ -->
 
                     <button type="submit" class="cyber-submit-btn" id="btn-diagnose">
                         <span class="btn-bracket">[</span> KHỞI ĐỘNG CHẨN ĐOÁN (DIAGNOSTIC) <span
@@ -180,6 +208,7 @@
                     </button>
                 </form>
             </section>
+
 
             <!-- RIGHT COLUMN: X-RAY -->
             <aside class="panel-right">
@@ -285,8 +314,40 @@
             el.classList.add('active');
             document.getElementById('mode-count').style.display = (mode === 'count' ? '' : 'none');
             document.getElementById('mode-duration').style.display = (mode === 'duration' ? '' : 'none');
+            document.getElementById('mode-mic').style.display = (mode === 'mic' ? '' : 'none');
             document.getElementById('beep-mode').value = mode;
             document.getElementById('beep-preview').classList.remove('show');
+        }
+
+        async function recordBeep() {
+            const btn    = document.getElementById('btn-beep-mic');
+            const status = document.getElementById('beep-mic-status');
+            btn.disabled = true;
+            btn.textContent = '⏺ Đang ghi âm bíp 3 giây...';
+            status.textContent = '';
+            try {
+                const AGENT = 'http://localhost:5001';
+                // Beep record dùng endpoint hardware vì bíp code thường liên quan hardware level
+                // Ta có thể dùng chung hoặc tạo riêng, ở đây ta dùng 1 logic record âm thanh chung
+                const res   = await fetch(AGENT + '/beep-record', { method: 'POST' });
+                const data  = await res.json();
+                if (data.status === 'ok') {
+                    status.style.color = '#00ff88';
+                    status.textContent = '✔ ' + data.message + ' (Nhấn Chẩn đoán để xem kết quả)';
+                    
+                    // Gán vào biến duration để chuẩn bị gửi form
+                    document.getElementById('beep-mode').value = 'duration';
+                    document.getElementById('hidden_beep_duration').value = data.duration;
+                } else {
+                    status.style.color = '#ff5555';
+                    status.textContent = '✖ Lỗi: ' + (data.error || 'Không xác định');
+                }
+            } catch(e) {
+                status.style.color = '#ffcc00';
+                status.textContent = '⚠ Không kết nối được Hardware Agent. Vui lòng chạy python hardware_agent.py';
+            }
+            btn.disabled = false;
+            btn.textContent = '🎙 BẮT ĐẦU GHI ÂM BÍP (3 GIÂY)';
         }
 
         function updateCategoryFact(cb) {
@@ -312,62 +373,75 @@
             setTimeout(() => { HTMLFormElement.prototype.submit.call(this); }, 1500);
         });
 
-        document.addEventListener('DOMContentLoaded', () => { updateBeepSlider(0.3); updateTempDisplay(45); });
+        document.addEventListener('DOMContentLoaded', () => { updateBeepSlider(0.3); updateFanDisplay(0.05); });
 
-        // ─── [THÊM MỚI] Fuzzy Temperature Preview (Client-side mirror) ───────
-        // Ánh xạ ngưỡng phản chiếu đúng với FuzzyTemperature trong fuzzy.py
-        // để preview tức thì mà không cần round-trip lên server.
-        const TEMP_PROFILES = {
-            office: { warning: [55, 65, 80], danger: [75, 90, 110] },
-            gaming: { warning: [80, 90, 95], danger: [90, 100, 110] },
+
+
+        // ─── Fuzzy Fan Noise Preview (Client-side mirror) ─────────────────────
+        // Nguồn hàm liên thuộc: Bai & Wang (2006), Springer pp.17-36
+        // Phân loại 4 nhãn ngôn ngữ: silent / normal / loud / grinding
+        function _leftOpen(x, a, b)       { if (x <= a) return 1; if (x >= b) return 0; return (b-x)/(b-a); }
+        function _rightOpen(x, a, b)      { if (x <= a) return 0; if (x >= b) return 1; return (x-a)/(b-a); }
+        function _triMu_fan(x, a, b, c)   { if (x<=a||x>=c) return 0; return x<=b?(x-a)/(b-a):(c-x)/(c-b); }
+
+        const FAN_LABELS = {
+            silent:   { badge: 'SILENT',   cls: 'sev-critical', msg: 'Quạt không hoạt động — kiểm tra kết nối CPU_FAN header và điện áp 12V.', icon_speed: '0s' },
+            normal:   { badge: 'NORMAL',   cls: 'sev-normal',   msg: 'Tiếng quạt bình thường — hệ thống tản nhiệt đang hoạt động tốt.', icon_speed: '2s' },
+            loud:     { badge: 'LOUD',     cls: 'sev-warning',  msg: 'Quạt chạy tốc độ cao — hệ thống có thể đang quá nhiệt. Vệ sinh bụi bẩn.', icon_speed: '0.4s' },
+            grinding: { badge: 'GRINDING', cls: 'sev-error',    msg: '⚠ Tiếng rít/kẹt — vòng bi (bearing) hỏng! TẮT MÁY NGAY, thay quạt mới.', icon_speed: '0.1s' }
         };
-        const TEMP_INFO = {
-            normal:  { badge: 'NORMAL',  cls: 'sev-normal',   msg: 'Temperature is within safe limits — system healthy.' },
-            warning: { badge: 'WARNING', cls: 'sev-warning',  msg: 'Temperature is rising — please check cooling system performance.' },
-            danger:  { badge: 'DANGER',  cls: 'sev-critical', msg: '⚠ CRITICAL OVERHEAT! Risk of Thermal Throttling or Sudden Shutdown.' },
-        };
 
-        function _triMu(x, a, b, c) {
-            if (x <= a || x >= c) return 0;
-            return x <= b ? (x - a) / (b - a) : (c - x) / (c - b);
-        }
-        function _trapMu(x, a, b, c, d) {
-            if (x <= a) return 0;
-            if (x >= d) return (c === d) ? 1 : 0;
-            if (x < b) return (x - a) / (b - a);
-            if (x <= c) return 1;
-            return (d - x) / (d - c);
+        function _fanLabel(rms) {
+            const m = {
+                silent:   _leftOpen(rms, 0.0, 0.05),
+                normal:   _triMu_fan(rms, 0.03, 0.08, 0.15),
+                loud:     _triMu_fan(rms, 0.12, 0.25, 0.40),
+                grinding: _rightOpen(rms, 0.35, 0.50)
+            };
+            return Object.entries(m).reduce((a, b) => b[1] > a[1] ? b : a)[0];
         }
 
-        function _getTempLabel(temp, pcType) {
-            const p = TEMP_PROFILES[pcType] || TEMP_PROFILES.office;
-            const muW = _triMu(temp,  p.warning[0], p.warning[1], p.warning[2]);
-            const muD = pcType === 'office'
-                ? _trapMu(temp, 75,  90, 110, 110)
-                : _trapMu(temp, 90, 100, 110, 110);
-            if (muD >= muW && muD > 0) return 'danger';
-            if (muW > 0)               return 'warning';
-            return 'normal';
-        }
-
-        function updateTempDisplay(val) {
-            val = parseInt(val);
-            const pcType = document.getElementById('pc_type').value;
-            const label  = _getTempLabel(val, pcType);
-            const info   = TEMP_INFO[label];
-            document.getElementById('temp-display').textContent       = val + '°C';
-            document.getElementById('temp-preview-label').textContent = val + '°C';
-            const badge = document.getElementById('temp-preview-badge');
+        function updateFanDisplay(val) {
+            val = parseFloat(val);
+            const label = _fanLabel(val);
+            const info  = FAN_LABELS[label];
+            document.getElementById('fan-display').textContent      = val.toFixed(2);
+            document.getElementById('fan-preview-label').textContent = '⚙ ' + val.toFixed(2) + ' RMS';
+            const badge = document.getElementById('fan-preview-badge');
             badge.textContent = info.badge;
             badge.className   = 'preview-sev-badge ' + info.cls;
-            document.getElementById('temp-preview-info').textContent  = info.msg;
+            document.getElementById('fan-preview-info').textContent = info.msg;
         }
 
-        function updateThermalProfile() {
-            // Khi đổi loại máy, cập nhật lại preview theo ngưỡng mới
-            updateTempDisplay(document.getElementById('temperature').value);
+        async function recordFanNoise() {
+            const btn    = document.getElementById('btn-fan-mic');
+            const status = document.getElementById('fan-mic-status');
+            btn.disabled = true;
+            btn.textContent = '⏺ Đang ghi âm 3 giây...';
+            status.textContent = '';
+            try {
+                const AGENT = 'http://localhost:5001';
+                const res   = await fetch(AGENT + '/fan-record', { method: 'POST' });
+                const data  = await res.json();
+                if (data.status === 'ok') {
+                    const rms = parseFloat(data.rms);
+                    document.getElementById('fan_score').value = rms.toFixed(2);
+                    updateFanDisplay(rms);
+                    status.style.color = '#00ff88';
+                    status.textContent = '✔ Ghi âm xong! RMS = ' + rms.toFixed(4) +
+                        ' | Tần số chủ đạo: ' + (data.dominant_freq_hz || '?').toFixed(1) + ' Hz';
+                } else {
+                    status.style.color = '#ff5555';
+                    status.textContent = '✖ Lỗi: ' + (data.error || 'Không xác định');
+                }
+            } catch(e) {
+                status.style.color = '#ffcc00';
+                status.textContent = '⚠ Không kết nối được Hardware Agent (localhost:5001). Dùng thanh trượt thủ công.';
+            }
+            btn.disabled = false;
+            btn.textContent = '🎙 GHI ÂM TIẾNG QUẠT (3 GIÂY)';
         }
-        // ─── KẾT THÚC Fuzzy Temperature Preview ──────────────────────────────
+        // ─── KẾT THÚC Fan Noise Preview ──────────────────────────────────────
     </script>
 </body>
 

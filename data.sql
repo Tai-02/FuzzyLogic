@@ -243,4 +243,21 @@ INSERT INTO rules (conditions, conclusion, solution) VALUES
  'Hệ thống tản nhiệt bắt đầu kém hiệu quả, không duy trì được xung nhịp tối đa', 
  'Kê cao đáy máy để tăng luồng khí (Airflow), kiểm tra môi trường phòng.');
 
+-- ==============================================================
+-- [MODULE] LUẬT LIÊN HỢP ĐA BIẾN (BEEP + NHIỆT ĐỘ + TRIỆU CHỨNG)
+-- Thể hiện sức mạnh của Forward Chaining kết hợp Fuzzy Logic
+-- ==============================================================
+INSERT INTO rules (conditions, conclusion, solution) VALUES
+('continuous, Temp_Danger', 
+ 'Bo mạch chủ chạm nguồn do quá tải nhiệt / Cảnh báo nhiệt khẩn cấp từ BIOS', 
+ 'Ngắt điện khẩn cấp ngay lập tức. Không cố bật lại máy. Chờ máy nguội hẳn, tháo nắp hông và kiểm tra xem có tụ điện nào bị phù nứt, hoặc quạt CPU có bị kẹt cứng không.'),
+
+('very long, Quạt kêu to (Loud fan noise)', 
+ 'Nguồn điện (PSU) hoạt động quá mức hoặc sắp hỏng do quá nhiệt', 
+ 'Tiếng bíp rất dài kèm tiếng quạt hú to cho thấy Nguồn máy tính (Power Supply) đang gặp trục trặc dòng điện. Tắt máy và thay thế Nguồn công suất thực cao hơn.'),
+
+('8 beeps, Startup, No Live Screen But System is On', 
+ 'VGA Card (Card màn hình rời) bị lỗi Video RAM', 
+ '8 tiếng bíp là mã lỗi đặc trưng của VRAM. Kết hợp với việc máy lên nguồn nhưng không xuất hình, 100% card màn hình của bạn đã hỏng. Cần thay thế card mới hoặc tháo card rời để cắm thẳng dây màn hình vào Mainboard (dùng iGPU).');
+
 
